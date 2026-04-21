@@ -31,7 +31,7 @@ from .loop import (
     ensure_results_tsv,
 )
 from .models import SourceRecord, SourceSnippet
-from .prepare import brief_approval_issues, parse_seed, run_prepare
+from .prepare import brief_approval_issues, parse_seed, resolve_seed_path, run_prepare
 from .scoring import is_strict_improvement
 from .tasks import choose_next_task
 from .utils import ensure_dir, now_iso, repo_root
@@ -85,7 +85,7 @@ def parse_args() -> argparse.Namespace:
 
 def command_prepare(args: argparse.Namespace) -> int:
     repo_root()
-    seed_path = Path(args.seed).resolve()
+    seed_path = resolve_seed_path(Path(args.seed).resolve())
     parse_seed(seed_path)
     paths = post_paths(args.slug)
     if args.through in {"claims", "draft"}:

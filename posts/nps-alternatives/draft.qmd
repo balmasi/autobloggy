@@ -1,0 +1,66 @@
+---
+title: NPS Is Overused. Build a Better CX Metric Stack.
+format: gfm
+---
+
+# NPS Is Overused. Build a Better CX Metric Stack.
+
+NPS survives because it gives leaders a single number they can put on a dashboard. That convenience is real. The problem is that teams often mistake convenience for explanatory power.
+
+If you use NPS as one rough signal, it can still be useful. If you use it as the customer experience metric, it will hide too much and tempt people to manage the score instead of the system.
+
+## Why NPS Became the Default
+
+NPS became the default because one question and one number fit neatly into executive dashboards. [@src-dawes-2024]
+
+That design is attractive in any organization that wants fast reporting, simple benchmarks, and crisp status updates. But a number that works well in a leadership deck does not automatically work well as a diagnostic tool.
+
+## How NPS Works
+
+In the standard NPS framing, scores of 9 to 10 are promoters, 7 to 8 are passives, and 0 to 6 are detractors. [@src-bain-nps]
+
+The score is calculated as the share of promoters minus the share of detractors. [@src-bain-nps]
+
+That is the entire appeal and the entire problem. The metric is easy to explain, easy to circulate, and easy to overinterpret.
+
+## What NPS Throws Away
+
+Identical NPS values can come from very different promoter, passive, and detractor mixes. [@src-lacohee-2024]
+
+That means the same headline score can describe very different operating realities. One company can have a polarized customer base with many fans and many critics. Another can have mostly 7s and 8s and very little strong feeling in either direction. Those two businesses need different responses, but the transformed score compresses them into the same summary judgment.
+
+This is the core flaw in treating NPS as the KPI. It hides shape, not just level. A team can miss the difference between a volatility problem and a mediocrity problem because both get flattened into one number.
+
+## Statistical Problems
+
+Recent critiques note imprecision concerns in the transformed score and weak support for using NPS as an indicator of future revenue growth. [@src-dawes-2024; @src-lacohee-2024]
+
+Dawes's longitudinal review is especially useful here because it pushes past the usual dashboard logic. The paper's conclusion is not that NPS is worthless. It is that the evidence does not support treating it as a reliable signal of future revenue growth across the way it is often sold to managers. That is a much narrower and more defensible takeaway.
+
+This is also why small swings get organizations into trouble. Once people are trained to see every movement in the top-line score as a story, random variation starts to look like causal evidence.
+
+## Intent Is Not Behavior
+
+NPS captures self-reported likelihood to recommend, not observed recommendation behavior, and it does not directly measure negative word of mouth. [@src-lacohee-2024]
+
+That matters because customer relationships are not tidy labels. A customer can like the product, recommend it to one colleague, warn another about support, and still give you a middling score on a survey. The recommendation question can be informative, but it is still a statement of intent in a particular moment, not a direct behavioral record.
+
+## What to Do Instead
+
+If you keep NPS, report the underlying distribution and follow-up comments alongside the transformed score. [@src-lacohee-2024]
+
+That is the minimum responsible use of it. The distribution tells you whether you are looking at polarization, indifference, or broad approval. The comments tell you why. Together they are more actionable than the delta alone.
+
+In the HBR Customer Effort Score study, CES outperformed CSAT and NPS in customer service interactions. [@src-hbr-ces]
+
+CES is more useful when paired with operational measures such as repeat calls, transfers, and channel switching. [@src-hbr-ces]
+
+That does not mean CES replaces everything else. It means the right metric depends on the job. If you want to understand a support interaction, effort is often more diagnostic than advocacy intent. If you want to understand account health, retention, repeat purchase, expansion, time to value, and task completion usually tell you more than a single recommendation question.
+
+In practice, the better move is a small metric stack: NPS for rough sentiment, CSAT or CES for specific interactions, behavioral data for what customers actually did, and qualitative feedback for mechanism. That gives teams something they can act on instead of just something they can report.
+
+## Conclusion
+
+NPS is not useless. It is just overloaded.
+
+Use it as a rough sentiment signal, not a KPI deity. Track the distribution, read the comments, and combine it with behavioral and task-level data before you declare progress. Metrics should help teams prioritize fixes and experiments. They should not become a substitute for understanding customers.

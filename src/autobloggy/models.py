@@ -102,10 +102,10 @@ class RunState(BaseModel):
 class PostPaths(BaseModel):
     slug: str
     root: Path
+    seed_root: Path
     brief: Path
     outline: Path
     claims: Path
     sources: Path
     draft: Path
     runs: Path
-

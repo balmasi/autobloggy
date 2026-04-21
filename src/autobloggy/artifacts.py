@@ -18,6 +18,7 @@ def post_paths(slug: str, root: Path | None = None) -> PostPaths:
     return PostPaths(
         slug=slug,
         root=post_root,
+        seed_root=post_root / "seed",
         brief=post_root / "brief.md",
         outline=post_root / "outline.md",
         claims=post_root / "claims.yaml",
@@ -106,4 +107,3 @@ def claim_fingerprint(claim: dict[str, Any]) -> str:
 
 def cited_source_ids(text: str) -> list[str]:
     return re.findall(r"\[@([A-Za-z0-9._-]+)\]", text)
-

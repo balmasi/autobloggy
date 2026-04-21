@@ -36,8 +36,8 @@ sources:
   title: How to Use Claude Code and NotebookLM for a Digestible Content Infographic
     Pipeline
   kind: local_markdown
-  locator: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/seed.md
-  notes: Original seed material.
+  locator: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/seed/seed.md
+  notes: Original seed material. Supporting seed files live under /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/seed.
   snippets:
   - id: snip-seed-001
     text: Reading backlog is unmanageable, especially when it includes long papers,

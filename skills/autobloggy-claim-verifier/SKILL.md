@@ -7,6 +7,8 @@ description: Verify Autobloggy claims against nearby draft context and linked so
 
 Use this skill when checking whether Autobloggy claims should pass or fail.
 
+This skill is for writing verifier verdicts inside the main content iteration loop. It does not decide whether an attempt is kept or reverted; `evaluate` does that.
+
 ## Scope
 
 - One claim at a time.
@@ -33,4 +35,3 @@ Use this skill when checking whether Autobloggy claims should pass or fail.
 - Prefer primary evidence.
 - Do not infer support from topic similarity alone.
 - If the source only partly supports the wording, fail and explain the gap.
-

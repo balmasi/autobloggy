@@ -49,6 +49,15 @@ UNRESOLVED_BRIEF_MARKERS = (
     "- [ ]",
 )
 
+SUPPORTED_SEED_SUFFIXES = {".md", ".markdown", ".qmd", ".txt", ".pptx"}
+PREFERRED_SEED_FILENAMES = (
+    "seed.md",
+    "seed.markdown",
+    "seed.qmd",
+    "seed.txt",
+    "seed.pptx",
+)
+
 
 def markdown_headings(text: str) -> list[tuple[int, str]]:
     matches = re.finditer(r"^(#{1,6})\s+(.+)$", text, flags=re.MULTILINE)
@@ -84,7 +93,36 @@ def usable_markdown_headings(text: str, title: str) -> list[str]:
     return headings
 
 
+def resolve_seed_path(seed_input: Path) -> Path:
+    if seed_input.is_file():
+        if seed_input.suffix.lower() not in SUPPORTED_SEED_SUFFIXES:
+            raise ValueError(f"Unsupported seed format: {seed_input.suffix}")
+        return seed_input
+
+    if not seed_input.is_dir():
+        raise FileNotFoundError(f"Seed path does not exist: {seed_input}")
+
+    for filename in PREFERRED_SEED_FILENAMES:
+        candidate = seed_input / filename
+        if candidate.exists():
+            return candidate
+
+    candidates = sorted(
+        path for path in seed_input.rglob("*") if path.is_file() and path.suffix.lower() in SUPPORTED_SEED_SUFFIXES
+    )
+    if len(candidates) == 1:
+        return candidates[0]
+    if not candidates:
+        raise ValueError(
+            f"No supported seed file found in {seed_input}. Add one of: {', '.join(PREFERRED_SEED_FILENAMES)}."
+        )
+    raise ValueError(
+        f"Multiple supported seed files found in {seed_input}. Pass a file path or keep a single canonical seed file."
+    )
+
+
 def parse_seed(seed_path: Path) -> SeedContent:
+    seed_path = resolve_seed_path(seed_path)
     suffix = seed_path.suffix.lower()
     if suffix in {".md", ".markdown", ".qmd", ".txt"}:
         raw = read_text(seed_path)
@@ -153,11 +191,12 @@ def brief_approval_issues(brief_text: str) -> list[str]:
     return issues
 
 
-def generate_brief(slug: str, seed: SeedContent, seed_path: Path) -> str:
+def generate_brief(slug: str, seed: SeedContent, seed_path: Path, seed_root: Path) -> str:
     frontmatter = {
         "slug": slug,
         "title": seed.title,
         "seed_path": str(seed_path),
+        "seed_root": str(seed_root),
         "seed_type": seed.kind,
         "generated_at": now_iso(),
         "status": "needs_review",
@@ -261,7 +300,9 @@ def extract_claim_texts(seed: SeedContent, headings: list[str]) -> list[tuple[st
     return pairs
 
 
-def build_source_registry(seed: SeedContent, seed_path: Path, existing: SourcesDocument | None = None) -> SourcesDocument:
+def build_source_registry(
+    seed: SeedContent, seed_path: Path, seed_root: Path, existing: SourcesDocument | None = None
+) -> SourcesDocument:
     existing_sources = {source.id: source for source in (existing.sources if existing else [])}
     local_source_id = "src-seed"
     local_source = SourceRecord(
@@ -269,7 +310,7 @@ def build_source_registry(seed: SeedContent, seed_path: Path, existing: SourcesD
         title=seed.title,
         kind="local_pptx" if seed.kind == "pptx" else "local_markdown",
         locator=str(seed_path),
-        notes="Original seed material.",
+        notes=f"Original seed material. Supporting seed files live under {seed_root}.",
         snippets=[SourceSnippet(id="snip-seed-001", text=summarize_text(seed.text, 2) or seed.title)],
     )
     existing_sources[local_source_id] = local_source
@@ -386,13 +427,15 @@ def generate_draft(brief_text: str, outline_text: str, claims: ClaimsDocument) -
 
 
 def run_prepare(slug: str, seed_path: Path, through: str) -> dict[str, str]:
+    seed_path = resolve_seed_path(seed_path)
     seed = parse_seed(seed_path)
     paths = post_paths(slug)
+    seed_root = seed_path.parent
     paths.root.mkdir(parents=True, exist_ok=True)
     generated: dict[str, str] = {}
 
     if through == "brief" or not paths.brief.exists():
-        brief_text = generate_brief(slug, seed, seed_path)
+        brief_text = generate_brief(slug, seed, seed_path, seed_root)
         write_text(paths.brief, brief_text)
         generated["brief"] = str(paths.brief)
     else:
@@ -414,7 +457,7 @@ def run_prepare(slug: str, seed_path: Path, through: str) -> dict[str, str]:
     headings = re.findall(r"^##\s+(.+)$", outline_text, flags=re.MULTILINE)
     existing_claims = read_claims(paths.claims) if paths.claims.exists() else None
     existing_sources = read_sources(paths.sources) if paths.sources.exists() else None
-    source_doc = build_source_registry(seed, seed_path, existing_sources)
+    source_doc = build_source_registry(seed, seed_path, seed_root, existing_sources)
     source_ids = [source.id for source in source_doc.sources[:1]]
     claim_doc = merge_claims(existing_claims, extract_claim_texts(seed, headings), source_ids)
     write_sources(paths.sources, source_doc)

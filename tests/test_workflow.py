@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tests.helpers import copy_repo, run_cli
+from tests.helpers import copy_repo, resolve_generated_brief, run_cli
 
 
 def parse_kv(stdout: str) -> dict[str, str]:
@@ -20,6 +20,7 @@ def test_stage_attempt_verify_and_evaluate_smoke(repo_root: Path, tmp_path: Path
     slug = "example-post"
     seed = repo / "tests" / "fixtures" / "example_seed.md"
     run_cli(repo, "prepare", "--slug", slug, "--seed", str(seed), "--through", "brief")
+    resolve_generated_brief(repo / "posts" / slug / "brief.md")
     run_cli(repo, "approve-brief", "--slug", slug)
     run_cli(repo, "prepare", "--slug", slug, "--seed", str(seed), "--through", "draft")
 

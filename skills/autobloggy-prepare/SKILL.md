@@ -9,9 +9,11 @@ Use this skill when working on the staged `prepare` flow for an Autobloggy post.
 
 Read `references/brief-template.md` before you interview the user or approve a brief.
 
+This skill covers the staged `prepare` flow only. Once the first `draft.qmd` exists, the caller or orchestrator should continue into the attempt loop rather than stopping at the end of `prepare`.
+
 ## Workflow
 
-1. Read `program.md` and the seed file.
+1. Read `program.md`, the main seed file, and any relevant supporting files under `posts/<slug>/seed/`.
 2. Ask the user direct briefing questions until you can fill every required item from `references/brief-template.md`.
 3. If you are Claude, prefer `AskUserTool` when it is available. If you are Codex, prefer `request_user_input` when it is available. Otherwise ask directly in chat.
 4. Generate or update `brief.md` with all required sections, including `Target Voice` and `Style Guardrails`.
@@ -21,6 +23,7 @@ Read `references/brief-template.md` before you interview the user or approve a b
 8. Generate or update `outline.md`.
 9. Generate or update `claims.yaml` and `sources.yaml`.
 10. Generate or update the initial `draft.qmd`.
+11. Hand back to the main Autobloggy loop so it can run `stage-attempt`, edit, verify, evaluate, and repeat.
 
 ## Rules
 

@@ -1,6 +1,26 @@
 {
   "version": 1,
   "skills": {
+    "autobloggy-claim-verifier": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "1eefb94952f52fd8e55307dccb5ad72ce70b4e2926d1cbb6920586c8d7e1cb56"
+    },
+    "autobloggy-copy-edit": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "a6865ed1825da565df59d00417f5359387f5096602a830c426b4fa89c0c19931"
+    },
+    "autobloggy-prepare": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "631d2e536fac7acabf24320a5c067cbcab467b1cfcbe01cd7312ada543cb4609"
+    },
+    "autobloggy-transcribe": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "e9658168c4c2d3baafd4d0e10caca499f086845678844f54637747b685c6a41e"
+    },
     "ffmpeg-analyse-video": {
       "source": "fabriqaai/ffmpeg-analyse-video-skill",
       "sourceType": "github",

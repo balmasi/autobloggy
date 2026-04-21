@@ -7,31 +7,9 @@ from pathlib import Path
 
 from pptx import Presentation
 
+from autobloggy.artifacts import extract_frontmatter, read_sources
 from autobloggy.prepare import run_prepare
-from tests.helpers import copy_repo
-
-
-def resolve_generated_brief(brief_path: Path) -> None:
-    text = brief_path.read_text(encoding="utf-8")
-    replacements = {
-        "[REQUIRED: name the primary reader and the job they are trying to do.]": "Platform and product engineering leads who need operational guidance they can apply this quarter.",
-        "[REQUIRED: confirm or replace this with the user's preferred voice.]": "",
-        "[REQUIRED: edit these guardrails until they match the user's expectations for the piece.]": "",
-        "[REQUIRED: add or remove points until this captures the non-negotiable substance of the post.]": "",
-        "[REQUIRED: record any tones, claims, examples, or framing that should be avoided.]": "",
-        "- [REQUIRED: What specific reader or buyer context should shape the framing?]": "- The framing should help technical leaders decide whether this workflow is worth adopting for their team.",
-        "- [REQUIRED: Which claims or examples are mandatory because they matter to this audience?]": "- The post must include one concrete example, one tradeoff, and one boundary where the approach should not be used.",
-        "- [REQUIRED: What should the post sound like, and what should it never sound like?]": "- It should sound like a practiced operator and never like marketing copy or generic AI advice.",
-        "- [REQUIRED: What practical takeaway should the reader leave with?]": "- The reader should leave with a clear decision rule and a concrete next step.",
-        "- [ ] Audience is specific enough to guide structure and examples.": "- [x] Audience is specific enough to guide structure and examples.",
-        "- [ ] Target voice reflects the user's actual preference, not the default.": "- [x] Target voice reflects the user's actual preference, not the default.",
-        "- [ ] Style guardrails are concrete enough to guide generation.": "- [x] Style guardrails are concrete enough to guide generation.",
-        "- [ ] Must-cover points capture the non-negotiable substance of the post.": "- [x] Must-cover points capture the non-negotiable substance of the post.",
-        "- [ ] Must-avoid and evidence rules are explicit.": "- [x] Must-avoid and evidence rules are explicit.",
-    }
-    for old, new in replacements.items():
-        text = text.replace(old, new)
-    brief_path.write_text(text, encoding="utf-8")
+from tests.helpers import copy_repo, resolve_generated_brief
 
 
 def test_prepare_supports_markdown_seed(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
@@ -42,6 +20,41 @@ def test_prepare_supports_markdown_seed(repo_root: Path, tmp_path: Path, monkeyp
 
     assert "draft" in generated
     assert (repo / "posts" / slug / "claims.yaml").exists()
+
+
+def test_prepare_supports_seed_directory_with_supporting_files(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
+    repo = copy_repo(repo_root, tmp_path)
+    monkeypatch.chdir(repo)
+    slug = "prepare-seed-dir"
+    seed_root = repo / "posts" / slug / "seed"
+    seed_root.mkdir(parents=True, exist_ok=True)
+    seed_path = seed_root / "seed.md"
+    seed_path.write_text(
+        """---
+title: Seed Directory Example
+---
+
+# Seed Directory Example
+
+Seed notes can live beside supporting files instead of cluttering the post root.
+""",
+        encoding="utf-8",
+    )
+    (seed_root / "slides").mkdir()
+    (seed_root / "slides" / "overview.txt").write_text("Slide notes.", encoding="utf-8")
+
+    generated = run_prepare(slug, seed_root, "claims")
+
+    assert "claims" in generated
+
+    brief_frontmatter, _ = extract_frontmatter((repo / "posts" / slug / "brief.md").read_text(encoding="utf-8"))
+    assert brief_frontmatter["seed_path"] == str(seed_path)
+    assert brief_frontmatter["seed_root"] == str(seed_root)
+
+    sources = read_sources(repo / "posts" / slug / "sources.yaml")
+    seed_source = next(source for source in sources.sources if source.id == "src-seed")
+    assert seed_source.locator == str(seed_path)
+    assert str(seed_root) in (seed_source.notes or "")
 
 
 def test_prepare_supports_pptx_seed(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
@@ -115,6 +128,7 @@ def test_generate_brief_includes_required_voice_sections(repo_root: Path, tmp_pa
     assert "## Evidence Standards" in brief_text
     assert "## Approval Checklist" in brief_text
     assert "[REQUIRED:" in brief_text
+    assert "seed_root:" in brief_text
 
 
 def test_cli_requires_brief_approval_before_generating_draft(repo_root: Path, tmp_path: Path) -> None:
@@ -181,3 +195,33 @@ def test_cli_requires_brief_approval_before_generating_draft(repo_root: Path, tm
     assert "draft\t" in final_prepare.stdout
     assert (repo / "posts" / slug / "draft.qmd").exists()
     assert "Custom review note." in brief_path.read_text(encoding="utf-8")
+
+
+def test_cli_accepts_seed_directory(repo_root: Path, tmp_path: Path) -> None:
+    repo = copy_repo(repo_root, tmp_path)
+    slug = "review-seed-dir"
+    seed_root = repo / "posts" / slug / "seed"
+    seed_root.mkdir(parents=True, exist_ok=True)
+    seed_path = seed_root / "seed.md"
+    seed_path.write_text(
+        """# Seed Dir CLI
+
+Putting the seed under posts/<slug>/seed keeps related files together.
+""",
+        encoding="utf-8",
+    )
+    (seed_root / "images").mkdir()
+    (seed_root / "images" / "frame.txt").write_text("image placeholder", encoding="utf-8")
+
+    first_prepare = subprocess.run(
+        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--seed", str(seed_root)],
+        cwd=repo,
+        env={**os.environ, "PYTHONPATH": str(repo / "src")},
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert "brief\t" in first_prepare.stdout
+
+    brief_path = repo / "posts" / slug / "brief.md"
+    assert f"seed_path: {seed_path}" in brief_path.read_text(encoding="utf-8")

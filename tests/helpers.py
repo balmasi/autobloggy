@@ -29,3 +29,25 @@ def run_cli(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
         check=True,
     )
 
+
+def resolve_generated_brief(brief_path: Path) -> None:
+    text = brief_path.read_text(encoding="utf-8")
+    replacements = {
+        "[REQUIRED: name the primary reader and the job they are trying to do.]": "Platform and product engineering leads who need operational guidance they can apply this quarter.",
+        "[REQUIRED: confirm or replace this with the user's preferred voice.]": "",
+        "[REQUIRED: edit these guardrails until they match the user's expectations for the piece.]": "",
+        "[REQUIRED: add or remove points until this captures the non-negotiable substance of the post.]": "",
+        "[REQUIRED: record any tones, claims, examples, or framing that should be avoided.]": "",
+        "- [REQUIRED: What specific reader or buyer context should shape the framing?]": "- The framing should help technical leaders decide whether this workflow is worth adopting for their team.",
+        "- [REQUIRED: Which claims or examples are mandatory because they matter to this audience?]": "- The post must include one concrete example, one tradeoff, and one boundary where the approach should not be used.",
+        "- [REQUIRED: What should the post sound like, and what should it never sound like?]": "- It should sound like a practiced operator and never like marketing copy or generic AI advice.",
+        "- [REQUIRED: What practical takeaway should the reader leave with?]": "- The reader should leave with a clear decision rule and a concrete next step.",
+        "- [ ] Audience is specific enough to guide structure and examples.": "- [x] Audience is specific enough to guide structure and examples.",
+        "- [ ] Target voice reflects the user's actual preference, not the default.": "- [x] Target voice reflects the user's actual preference, not the default.",
+        "- [ ] Style guardrails are concrete enough to guide generation.": "- [x] Style guardrails are concrete enough to guide generation.",
+        "- [ ] Must-cover points capture the non-negotiable substance of the post.": "- [x] Must-cover points capture the non-negotiable substance of the post.",
+        "- [ ] Must-avoid and evidence rules are explicit.": "- [x] Must-avoid and evidence rules are explicit.",
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    brief_path.write_text(text, encoding="utf-8")

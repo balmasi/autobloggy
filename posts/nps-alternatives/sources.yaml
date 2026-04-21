@@ -1,0 +1,47 @@
+sources:
+- id: src-bain-nps
+  title: Introducing the Net Promoter System
+  kind: url
+  locator: https://www.bain.com/insights/introducing-the-net-promoter-system-loyalty-insights
+  notes: Bain's explanation of the canonical NPS question, buckets, and formula.
+  snippets:
+  - id: src-bain-nps-001
+    text: Bain defines the 0 to 10 recommendation question, the promoter/passive/detractor
+      buckets, and NPS as promoters minus detractors.
+- id: src-dawes-2024
+  title: 'Net Promoter and Revenue Growth: An Examination Across Three Industries'
+  kind: url
+  locator: https://journals.sagepub.com/doi/pdf/10.1177/14413582221132039
+  notes: Longitudinal critique of the claim that NPS indicates future revenue growth.
+  snippets:
+  - id: src-dawes-2024-001
+    text: Dawes reviews prior work and concludes the overall evidence does not support
+      NPS as an indicator of future revenue growth.
+- id: src-hbr-ces
+  title: Stop Trying to Delight Your Customers
+  kind: url
+  locator: https://hbr.org/2010/07/stop-trying-to-delight-your-customers
+  notes: Widely cited HBR article introducing Customer Effort Score in service interactions.
+  snippets:
+  - id: src-hbr-ces-001
+    text: Dixon, Freeman, and Toman report that CES outperformed CSAT and NPS
+      in customer service interactions in their study.
+- id: src-lacohee-2024
+  title: 'The Net Promoter Score Interrogated Through a Services Marketing Lens'
+  kind: url
+  locator: https://journals.sagepub.com/doi/10.1177/14707853231218605
+  notes: Review article on NPS limits, distribution loss, and recommendation behavior.
+  snippets:
+  - id: src-lacohee-2024-001
+    text: The review argues identical NPS values can arise from very different
+      promoter, passive, and detractor mixes and recommends reporting the underlying
+      distribution alongside the transformed score.
+- id: src-seed
+  title: NPS Is Overused. Build a Better CX Metric Stack.
+  kind: local_markdown
+  locator: /Users/balmasi/Projects/autobloggy/posts/nps-alternatives/seed/seed.md
+  notes: Original seed material. Supporting seed files live under /Users/balmasi/Projects/autobloggy/posts/nps-alternatives/seed.
+  snippets:
+  - id: snip-seed-001
+    text: NPS is overused as the customer experience metric, and a better approach
+      is to use it as one rough signal inside a broader metric stack.
