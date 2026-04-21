@@ -1,0 +1,67 @@
+sources:
+- id: src-composer-2
+  title: Introducing Composer 2
+  kind: url
+  locator: https://cursor.com/blog/composer-2/
+  notes: null
+  snippets:
+  - id: src-composer-2-001
+    text: Cursor announced Composer 2 on March 19, 2026. The post says Composer 2
+      is available in Cursor, reports benchmark gains over earlier Composer versions,
+      and lists pricing of $0.50 per million input tokens and $2.50 per million output
+      tokens.
+- id: src-mythos-preview
+  title: Project Glasswing and Claude Mythos Preview
+  kind: url
+  locator: https://www.anthropic.com/project/glasswing
+  notes: null
+  snippets:
+  - id: src-mythos-preview-001
+    text: Anthropic introduced Project Glasswing on April 7, 2026 and describes Claude
+      Mythos Preview as its most capable model yet for coding and agentic tasks. The
+      page says Mythos Preview is available as a gated research preview and links
+      to the model system card for evaluation details.
+- id: src-notebooklm-py
+  title: notebooklm-py on PyPI
+  kind: url
+  locator: https://pypi.org/project/notebooklm-py/
+  notes: null
+  snippets:
+  - id: src-notebooklm-py-001
+    text: The PyPI package page says notebooklm-py is an unofficial Python library
+      for automating Google NotebookLM, warns that it uses undocumented Google APIs,
+      and documents installation with `pip install notebooklm-py` or `pip install
+      "notebooklm-py[browser]"` for first-time browser login.
+- id: src-seed
+  title: How to Use Claude Code and NotebookLM for a Digestible Content Infographic
+    Pipeline
+  kind: local_markdown
+  locator: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/seed.md
+  notes: Original seed material.
+  snippets:
+  - id: snip-seed-001
+    text: Reading backlog is unmanageable, especially when it includes long papers,
+      technical PDFs, and documents that matter but are not central enough to justify
+      a full close read. The workflow pairs a coding agent with NotebookLM to compress
+      source material into slide decks and infographics tailored to a specific learning
+      style.
+- id: src-tribe-v2
+  title: facebookresearch/tribev2
+  kind: url
+  locator: https://github.com/facebookresearch/tribev2
+  notes: null
+  snippets:
+  - id: src-tribe-v2-001
+    text: Meta published the TRIBE v2 repository under facebookresearch. The README
+      describes it as a foundation model of vision, audition, and language for in-silico
+      neuroscience that predicts fMRI brain responses to video, audio, and text.
+- id: src-uv
+  title: uv installation docs
+  kind: url
+  locator: https://docs.astral.sh/uv/
+  notes: null
+  snippets:
+  - id: src-uv-001
+    text: Astral documents uv installation with a standalone installer and shows commands
+      such as `curl -LsSf https://astral.sh/uv/install.sh | sh` plus `uv run` and
+      `uv sync` for project workflows.

@@ -1,0 +1,2 @@
+"""Autobloggy package."""
+

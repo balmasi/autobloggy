@@ -1,0 +1,25 @@
+readability:
+  target_min_words_per_sentence: 8
+  target_max_words_per_sentence: 26
+checks:
+  banned_patterns_file: shared/banned_patterns.yaml
+  must_have_verifiers:
+    - opening_clarity
+    - paragraph_focus
+    - claim_support
+    - unsupported_superlatives
+    - voice
+    - overstatement
+  improvement_verifiers:
+    - specificity
+    - so_what
+    - filler_hype
+loop:
+  max_iterations: 25
+  time_budget_minutes: 180
+  task_priority:
+    - deterministic_blockers
+    - must_have_verifiers
+    - claim_issues
+    - hillclimb
+

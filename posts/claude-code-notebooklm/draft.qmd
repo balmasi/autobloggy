@@ -1,0 +1,58 @@
+---
+title: How to Use Claude Code and NotebookLM for a Digestible Content Infographic Pipeline
+format: gfm
+---
+
+# How to Use Claude Code and NotebookLM for a Digestible Content Infographic Pipeline
+
+Reading backlog is unmanageable, especially when it includes long papers, technical PDFs, and documents that matter but are not central enough to justify a full close read. [@src-seed]
+
+The practical move is to split the stack in two. Read the truly central material end to end, then use a faster compression workflow for everything else.
+
+## Problem framing
+
+Most reading queues do not fail because every document is equally important. They fail because too many adjacent documents stay in the same pile as the core ones. Once that happens, triage turns into procrastination.
+
+## Solution concept
+
+The workflow pairs a coding agent with NotebookLM to compress source material into slide decks and infographics tailored to a specific learning style. [@src-seed; @src-notebooklm-py]
+
+That combination is useful because it separates orchestration from synthesis. Claude Code can manage the repo, prompts, file layout, and iteration loop, while NotebookLM can turn the source set into a format that is easier to scan than the original document.
+
+## When and why to use it
+
+The goal is not to replace deep reading for core material. [@src-seed]
+
+The goal is to triage faster, understand more of the backlog, and decide what deserves a deeper pass. [@src-seed]
+
+Use this on secondary papers, product announcements, long technical PDFs, and system cards you want to understand before you commit real time. If a document is central to a launch, design decision, or research direction, read the source itself.
+
+## Setup steps
+
+A quick setup is to install `uv`, install `notebooklm-py`, authenticate, run a smoke test, and then point Claude Code at the repository prompt. [@src-seed; @src-uv; @src-notebooklm-py]
+
+The `uv` docs cover installation and the basic `uv run` and `uv sync` workflow. The `notebooklm-py` package page documents login, notebook creation, source import, chat, and content generation. It also says the library is unofficial and uses undocumented Google APIs, so this is a practical workflow, not a guaranteed stable integration. [@src-uv; @src-notebooklm-py]
+
+## Prompt and style guide
+
+The prompt should specify what to create, how to structure it, and which learning style to target. [@src-seed]
+
+In practice that means asking for a slide deck or infographic, defining the section order, setting the level of compression, and naming the intended reader. A prompt that says "make this visual" is too vague. A prompt that says "turn this into a short deck for a visual learner who wants the main argument, evidence, and caveats" gives the agent something it can reliably execute.
+
+## Example runs
+
+Three useful trial documents for this workflow are Cursor Composer 2, Meta TRIBE v2, and the Claude Mythos Preview system card. [@src-composer-2; @src-tribe-v2; @src-mythos-preview]
+
+That set is useful because each document has a different shape. Composer 2 is a product launch post with benchmark and pricing detail. TRIBE v2 is a research codebase and model description. Mythos Preview is a system-card style artifact tied to security evaluations and release framing. If the workflow can summarize all three cleanly, it is probably general enough for most backlog triage.
+
+## Time savings and takeaways
+
+In the seed estimate, the workflow takes about 15 minutes versus about 4 hours of conventional reading for the same materials. [@src-seed]
+
+Treat that number as a rough working benchmark, not a promise. The real advantage is not just speed. It is that you end up with a reusable artifact that helps you decide whether the original source deserves a slower second pass.
+
+## Conclusion
+
+The workflow is best used as a triage tool for secondary material, not as a substitute for careful reading of core sources. [@src-seed]
+
+If your reading queue keeps expanding, this is a reasonable default: compress first, read deeply second.

@@ -1,0 +1,19 @@
+# Future Work
+
+## Visual Loop
+
+- Generate visual briefs from accepted claims and outline sections.
+- Create diagram or image assets with a separate accept-or-retry loop.
+- Run deterministic asset checks and image-understanding verifiers before
+  linking accepted assets into `draft.qmd`.
+
+## Render And Export
+
+- Add Quarto/Pandoc-backed HTML and PDF rendering once the text loop is stable.
+- Add CMS payload export after the citation and asset contracts settle.
+
+## Portfolio Memory
+
+- Add cross-post memory under `portfolio/` derived from accepted run logs.
+- Keep v1 focused on one post at a time.
+

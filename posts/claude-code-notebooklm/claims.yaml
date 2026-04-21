@@ -1,0 +1,114 @@
+claims:
+- id: clm-001
+  text: Reading backlog is unmanageable, especially when it includes long papers,
+    technical PDFs, and documents that matter but are not central enough to justify
+    a full close read
+  section: opening
+  source_ids:
+  - src-seed
+  status: active
+  last_verification:
+    claim_fingerprint: 2c641b37060d9423
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
+- id: clm-002
+  text: The workflow pairs a coding agent with NotebookLM to compress source material
+    into slide decks and infographics tailored to a specific learning style
+  section: solution-concept
+  source_ids:
+  - src-seed
+  - src-notebooklm-py
+  status: active
+  last_verification:
+    claim_fingerprint: 9bcf02f3f3e12384
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
+- id: clm-003
+  text: The goal is not to replace deep reading for core material
+  section: when-and-why-to-use-it
+  source_ids:
+  - src-seed
+  status: active
+  last_verification:
+    claim_fingerprint: f0f5a54c2e1e4b66
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
+- id: clm-004
+  text: The goal is to triage faster, understand more of the backlog, and decide what
+    deserves a deeper pass
+  section: when-and-why-to-use-it
+  source_ids:
+  - src-seed
+  status: active
+  last_verification:
+    claim_fingerprint: 21b6ef955e33c506
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
+- id: clm-005
+  text: A quick setup is to install `uv`, install `notebooklm-py`, authenticate,
+    run a smoke test, and then point Claude Code at the repository prompt
+  section: setup-steps
+  source_ids:
+  - src-seed
+  - src-uv
+  - src-notebooklm-py
+  status: active
+  last_verification:
+    claim_fingerprint: ddbac5bb09678137
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
+- id: clm-006
+  text: The prompt should specify what to create, how to structure it, and which
+    learning style to target
+  section: prompt-and-style-guide
+  source_ids:
+  - src-seed
+  status: active
+  last_verification:
+    claim_fingerprint: 08062b46b55547fb
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
+- id: clm-007
+  text: Three useful trial documents for this workflow are Cursor Composer 2, Meta
+    TRIBE v2, and the Claude Mythos Preview system card
+  section: example-runs
+  source_ids:
+  - src-composer-2
+  - src-tribe-v2
+  - src-mythos-preview
+  status: active
+  last_verification:
+    claim_fingerprint: 08debbc602d9fd99
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
+- id: clm-008
+  text: In the seed estimate, the workflow takes about 15 minutes versus about 4
+    hours of conventional reading for the same materials
+  section: time-savings-and-takeaways
+  source_ids:
+  - src-seed
+  status: active
+  last_verification:
+    claim_fingerprint: fd2300f37e72b294
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
+- id: clm-009
+  text: The workflow is best used as a triage tool for secondary material, not as
+    a substitute for careful reading of core sources
+  section: conclusion
+  source_ids:
+  - src-seed
+  status: active
+  last_verification:
+    claim_fingerprint: 5bd9023a8e4b41f7
+    status: pass
+    reason: draft and sources aligned in attempt-002
+    checked_at: '2026-04-21T05:14:56+00:00'
