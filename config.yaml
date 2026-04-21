@@ -1,6 +1,6 @@
 readability:
-  target_min_words_per_sentence: 8
-  target_max_words_per_sentence: 26
+  target_flesch_kincaid_grade_level: 10
+  allowed_grade_level_deviation: 1
 checks:
   banned_patterns_file: shared/banned_patterns.yaml
   must_have_verifiers:
@@ -22,4 +22,3 @@ loop:
     - must_have_verifiers
     - claim_issues
     - hillclimb
-

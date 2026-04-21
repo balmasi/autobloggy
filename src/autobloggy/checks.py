@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import math
 import re
 from pathlib import Path
 
+from readability import Readability
+from readability.exceptions import ReadabilityException
 import yaml
 
 from .artifacts import cited_source_ids, extract_frontmatter, read_claims, read_sources, read_text
 from .models import CheckResult, CheckSummary
-from .utils import now_iso, paragraphs, repo_root, sentences, words
+from .utils import now_iso, paragraphs, repo_root, words
 
 
 def load_banned_patterns() -> list[str]:
@@ -16,20 +19,46 @@ def load_banned_patterns() -> list[str]:
     return list(raw.get("patterns", []))
 
 
-def sentence_word_counts(text: str) -> list[int]:
-    return [len(words(sentence)) for sentence in sentences(text)]
+def load_readability_config() -> tuple[float, float]:
+    root = repo_root()
+    raw = yaml.safe_load((root / "config.yaml").read_text(encoding="utf-8")) or {}
+    readability = raw.get("readability") or {}
+    return (
+        float(readability.get("target_flesch_kincaid_grade_level", 10)),
+        float(readability.get("allowed_grade_level_deviation", 1)),
+    )
+
+
+def normalize_readability_sample(text: str, minimum_words: int = 100) -> str:
+    sample = text.strip()
+    word_count = len(words(sample))
+    if word_count == 0 or word_count >= minimum_words:
+        return sample
+
+    # Repeating the same sample preserves the underlying readability ratios.
+    repeats = math.ceil(minimum_words / word_count)
+    return "\n".join(sample for _ in range(repeats))
+
+
+def flesch_kincaid_grade_level(text: str) -> float | None:
+    sample = normalize_readability_sample(text)
+    if not sample:
+        return None
+
+    try:
+        return Readability(sample).flesch_kincaid().score
+    except ReadabilityException:
+        return None
 
 
 def readability_penalty(text: str) -> int:
-    counts = sentence_word_counts(text)
-    if not counts:
-        return 5
-    average = sum(counts) / len(counts)
-    if average < 8:
-        return 8 - int(average)
-    if average > 26:
-        return int(average) - 26
-    return 0
+    target_grade_level, allowed_deviation = load_readability_config()
+    grade_level = flesch_kincaid_grade_level(text)
+    if grade_level is None:
+        return math.ceil(target_grade_level)
+
+    deviation = abs(grade_level - target_grade_level) - allowed_deviation
+    return max(0, math.ceil(deviation))
 
 
 def image_caption_failures(text: str) -> int:
