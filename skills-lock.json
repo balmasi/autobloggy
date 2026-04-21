@@ -1,11 +1,6 @@
 {
   "version": 1,
   "skills": {
-    "autobloggy-claim-verifier": {
-      "source": "/Users/balmasi/Projects/autobloggy/skills",
-      "sourceType": "local",
-      "computedHash": "1eefb94952f52fd8e55307dccb5ad72ce70b4e2926d1cbb6920586c8d7e1cb56"
-    },
     "autobloggy-copy-edit": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",

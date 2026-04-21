@@ -8,19 +8,14 @@ from .artifacts import (
     extract_frontmatter,
     format_markdown_with_frontmatter,
     post_paths,
-    read_claims,
     read_json,
-    read_sources,
     read_text,
-    write_claims,
     write_json,
-    write_sources,
     write_text,
 )
 from .checks import run_checks
 from .loop import (
     append_results,
-    collect_claim_issue_count,
     create_attempt,
     create_run,
     load_state,
@@ -30,8 +25,7 @@ from .loop import (
     write_diff,
     ensure_results_tsv,
 )
-from .models import SourceRecord, SourceSnippet
-from .prepare import brief_approval_issues, parse_seed, resolve_seed_path, run_prepare
+from .prepare import existing_strategy_path, outline_approval_issues, parse_input, resolve_input_path, run_prepare, strategy_approval_issues
 from .scoring import is_strict_improvement
 from .tasks import choose_next_task
 from .utils import ensure_dir, now_iso, repo_root
@@ -44,11 +38,18 @@ def parse_args() -> argparse.Namespace:
 
     prepare = subparsers.add_parser("prepare")
     prepare.add_argument("--slug", required=True)
-    prepare.add_argument("--seed", required=True)
-    prepare.add_argument("--through", choices=["brief", "outline", "claims", "draft"], default="brief")
+    prepare.add_argument("--input", dest="input_path")
+    prepare.add_argument("--seed", dest="legacy_seed_path")
+    prepare.add_argument("--through", choices=["strategy", "brief", "outline", "draft"], default="strategy")
 
-    approve = subparsers.add_parser("approve-brief")
+    approve = subparsers.add_parser("approve-strategy")
     approve.add_argument("--slug", required=True)
+
+    approve_legacy = subparsers.add_parser("approve-brief")
+    approve_legacy.add_argument("--slug", required=True)
+
+    approve_outline = subparsers.add_parser("approve-outline")
+    approve_outline.add_argument("--slug", required=True)
 
     stage = subparsers.add_parser("stage-attempt")
     stage.add_argument("--slug", required=True)
@@ -57,8 +58,6 @@ def parse_args() -> argparse.Namespace:
     check = subparsers.add_parser("check")
     check.add_argument("--slug", required=True)
     check.add_argument("--draft")
-    check.add_argument("--claims")
-    check.add_argument("--sources")
     check.add_argument("--output")
 
     verify = subparsers.add_parser("verify")
@@ -71,65 +70,96 @@ def parse_args() -> argparse.Namespace:
     evaluate.add_argument("--run-id", required=True)
     evaluate.add_argument("--attempt", required=True)
 
-    refresh = subparsers.add_parser("refresh-sources")
-    refresh.add_argument("--slug", required=True)
-    refresh.add_argument("--source-id", required=True)
-    refresh.add_argument("--title", required=True)
-    refresh.add_argument("--locator", required=True)
-    refresh.add_argument("--snippet", required=True)
-    refresh.add_argument("--kind", choices=["url", "local_markdown", "local_pptx", "manual"], default="url")
-    refresh.add_argument("--claim-id", action="append", default=[])
-
     return parser.parse_args()
 
 
 def command_prepare(args: argparse.Namespace) -> int:
     repo_root()
-    seed_path = resolve_seed_path(Path(args.seed).resolve())
-    parse_seed(seed_path)
+    input_arg = args.input_path or args.legacy_seed_path
+    if not input_arg:
+        raise SystemExit("prepare requires `--input`.")
+    input_path = resolve_input_path(Path(input_arg).resolve())
+    parse_input(input_path)
     paths = post_paths(args.slug)
-    if args.through in {"claims", "draft"}:
-        if not paths.brief.exists():
-            generated = run_prepare(args.slug, seed_path, "brief")
+    strategy_path = existing_strategy_path(paths)
+    through = "strategy" if args.through == "brief" else args.through
+    if through == "draft":
+        if not strategy_path.exists():
+            generated = run_prepare(args.slug, input_path, "strategy")
             for key, value in generated.items():
                 print(f"{key}\t{value}")
             raise SystemExit(
-                "Brief generated for review. Approve it with `autobloggy approve-brief --slug "
-                f"{args.slug}` before generating claims or a draft."
+                "Strategy generated for review. Approve it with `autobloggy approve-strategy --slug "
+                f"{args.slug}` before generating a draft."
             )
-        frontmatter, _ = extract_frontmatter(read_text(paths.brief))
+        frontmatter, _ = extract_frontmatter(read_text(strategy_path))
         if frontmatter.get("status") != "approved":
             raise SystemExit(
-                "Brief is not approved. Review `posts/{slug}/brief.md` and run "
-                "`autobloggy approve-brief --slug {slug}` before generating claims or a draft.".format(
+                "Strategy is not approved. Review `posts/{slug}/strategy.md` and run "
+                "`autobloggy approve-strategy --slug {slug}` before generating a draft.".format(
                     slug=args.slug
                 )
             )
-    generated = run_prepare(args.slug, seed_path, args.through)
+        if not paths.outline.exists():
+            generated = run_prepare(args.slug, input_path, "outline")
+            for key, value in generated.items():
+                print(f"{key}\t{value}")
+            raise SystemExit(
+                "Outline generated. Open posts/{slug}/outline.md and review the sections and\n"
+                "talking points. Edit freely — the outline is yours to reshape before the first\n"
+                "draft is written. When it looks right, run:\n\n"
+                "    autobloggy approve-outline --slug {slug}".format(slug=args.slug)
+            )
+        outline_fm, _ = extract_frontmatter(read_text(paths.outline))
+        if outline_fm.get("status") != "approved":
+            raise SystemExit(
+                "Outline is not yet approved. Review posts/{slug}/outline.md, make any edits,\n"
+                "then run:\n\n"
+                "    autobloggy approve-outline --slug {slug}\n\n"
+                "to generate the first draft.".format(slug=args.slug)
+            )
+    generated = run_prepare(args.slug, input_path, through)
     for key, value in generated.items():
         print(f"{key}\t{value}")
     return 0
 
 
-def command_approve_brief(args: argparse.Namespace) -> int:
+def command_approve_strategy(args: argparse.Namespace) -> int:
     paths = post_paths(args.slug)
-    if not paths.brief.exists():
-        raise FileNotFoundError(f"Brief does not exist: {paths.brief}")
-    brief_text = read_text(paths.brief)
-    issues = brief_approval_issues(brief_text)
+    strategy_path = existing_strategy_path(paths)
+    if not strategy_path.exists():
+        raise FileNotFoundError(f"Strategy does not exist: {paths.strategy}")
+    strategy_text = read_text(strategy_path)
+    issues = strategy_approval_issues(strategy_text)
     if issues:
-        raise SystemExit("Brief is incomplete:\n- " + "\n- ".join(issues))
-    frontmatter, body = extract_frontmatter(brief_text)
+        raise SystemExit("Strategy is incomplete:\n- " + "\n- ".join(issues))
+    frontmatter, body = extract_frontmatter(strategy_text)
     frontmatter["status"] = "approved"
     frontmatter["approved_at"] = now_iso()
-    write_text(paths.brief, format_markdown_with_frontmatter(frontmatter, body))
-    print(f"brief\t{paths.brief}")
+    write_text(paths.strategy, format_markdown_with_frontmatter(frontmatter, body))
+    print(f"strategy\t{paths.strategy}")
+    return 0
+
+
+def command_approve_outline(args: argparse.Namespace) -> int:
+    paths = post_paths(args.slug)
+    if not paths.outline.exists():
+        raise FileNotFoundError(f"Outline does not exist: {paths.outline}")
+    outline_text = read_text(paths.outline)
+    issues = outline_approval_issues(outline_text)
+    if issues:
+        raise SystemExit("Outline is incomplete:\n- " + "\n- ".join(issues))
+    frontmatter, body = extract_frontmatter(outline_text)
+    frontmatter["status"] = "approved"
+    frontmatter["approved_at"] = now_iso()
+    write_text(paths.outline, format_markdown_with_frontmatter(frontmatter, body))
+    print(f"outline\t{paths.outline}")
     return 0
 
 
 def command_stage_attempt(args: argparse.Namespace) -> int:
     paths = post_paths(args.slug)
-    if not paths.draft.exists() or not paths.claims.exists() or not paths.sources.exists():
+    if not paths.draft.exists():
         raise FileNotFoundError("Post artifacts are incomplete. Run prepare first.")
 
     if args.run_id:
@@ -140,12 +170,11 @@ def command_stage_attempt(args: argparse.Namespace) -> int:
     else:
         run_id, run_root = create_run(paths.root)
 
-    attempt_id, attempt_root = create_attempt(run_root, paths.draft, paths.claims, run_id)
+    attempt_id, attempt_root = create_attempt(run_root, paths.draft, run_id)
     ensure_dir(run_root)
-    baseline = summarize_attempt(run_id, "baseline", run_root / "attempts" / attempt_id, paths.draft, paths.claims, paths.sources)
-    check_summary = run_checks(paths.draft, paths.claims, paths.sources)
-    claim_issue_count, claim_issue_ids = collect_claim_issue_count(paths.claims, paths.draft)
-    task = choose_next_task(check_summary.model_dump(mode="json"), baseline, claim_issue_ids)
+    baseline = summarize_attempt(run_id, "baseline", run_root / "attempts" / attempt_id, paths.draft)
+    check_summary = run_checks(paths.draft)
+    task = choose_next_task(check_summary.model_dump(mode="json"), baseline)
     prompt_path = stage_prompt_pack(attempt_root, args.slug, task)
     write_json(attempt_root / "next-task.json", task)
     write_json(attempt_root / "baseline-summary.json", baseline.model_dump(mode="json"))
@@ -157,16 +186,13 @@ def command_stage_attempt(args: argparse.Namespace) -> int:
     print(f"run_id\t{run_id}")
     print(f"attempt_id\t{attempt_id}")
     print(f"prompt_pack\t{prompt_path}")
-    print(f"claim_issue_count\t{claim_issue_count}")
     return 0
 
 
 def command_check(args: argparse.Namespace) -> int:
     paths = post_paths(args.slug)
     draft_path = Path(args.draft) if args.draft else paths.draft
-    claims_path = Path(args.claims) if args.claims else paths.claims
-    sources_path = Path(args.sources) if args.sources else paths.sources
-    summary = run_checks(draft_path, claims_path, sources_path)
+    summary = run_checks(draft_path)
     payload = summary.model_dump(mode="json")
     if args.output:
         write_json(Path(args.output), payload)
@@ -181,7 +207,7 @@ def command_verify(args: argparse.Namespace) -> int:
     attempt_root = paths.runs / args.run_id / "attempts" / args.attempt
     if not attempt_root.exists():
         raise FileNotFoundError(f"Attempt does not exist: {attempt_root}")
-    written = write_verifier_bundle(attempt_root, attempt_root / "draft.qmd", attempt_root / "claims.yaml")
+    written = write_verifier_bundle(attempt_root, attempt_root / "draft.qmd")
     for key, value in written.items():
         print(f"{key}\t{value}")
     return 0
@@ -192,8 +218,8 @@ def command_evaluate(args: argparse.Namespace) -> int:
     run_root = paths.runs / args.run_id
     attempt_root = run_root / "attempts" / args.attempt
     state = load_state(run_root, args.run_id)
-    summary = summarize_attempt(args.run_id, args.attempt, attempt_root, attempt_root / "draft.qmd", attempt_root / "claims.yaml", paths.sources)
-    write_json(attempt_root / "check-results.json", run_checks(attempt_root / "draft.qmd", attempt_root / "claims.yaml", paths.sources).model_dump(mode="json"))
+    summary = summarize_attempt(args.run_id, args.attempt, attempt_root, attempt_root / "draft.qmd")
+    write_json(attempt_root / "check-results.json", run_checks(attempt_root / "draft.qmd").model_dump(mode="json"))
     write_json(attempt_root / "evaluation-summary.json", summary.model_dump(mode="json"))
     write_diff(paths.draft, attempt_root / "draft.qmd", attempt_root / "draft.diff")
 
@@ -202,7 +228,6 @@ def command_evaluate(args: argparse.Namespace) -> int:
     rationale = "candidate improved acceptance tuple"
     if decision == "keep":
         shutil.copy2(attempt_root / "draft.qmd", paths.draft)
-        shutil.copy2(attempt_root / "claims.yaml", paths.claims)
         state.accepted_summary = summary
         save_state(run_root, state)
     else:
@@ -215,47 +240,17 @@ def command_evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
-def command_refresh_sources(args: argparse.Namespace) -> int:
-    paths = post_paths(args.slug)
-    source_doc = read_sources(paths.sources)
-    claim_doc = read_claims(paths.claims)
-
-    source_doc.sources = [source for source in source_doc.sources if source.id != args.source_id]
-    source_doc.sources.append(
-        SourceRecord(
-            id=args.source_id,
-            title=args.title,
-            kind=args.kind,
-            locator=args.locator,
-            snippets=[SourceSnippet(id=f"{args.source_id}-001", text=args.snippet)],
-        )
-    )
-    source_doc.sources.sort(key=lambda item: item.id)
-
-    for claim in claim_doc.claims:
-        if args.claim_id and claim.id not in args.claim_id:
-            continue
-        if args.source_id not in claim.source_ids:
-            claim.source_ids.append(args.source_id)
-        claim.last_verification.status = "needs_rerun"
-        claim.last_verification.reason = f"source {args.source_id} added"
-
-    write_sources(paths.sources, source_doc)
-    write_claims(paths.claims, claim_doc)
-    print(paths.sources)
-    return 0
-
-
 def main() -> int:
     args = parse_args()
     command_map = {
         "prepare": command_prepare,
-        "approve-brief": command_approve_brief,
+        "approve-strategy": command_approve_strategy,
+        "approve-brief": command_approve_strategy,
+        "approve-outline": command_approve_outline,
         "stage-attempt": command_stage_attempt,
         "check": command_check,
         "verify": command_verify,
         "evaluate": command_evaluate,
-        "refresh-sources": command_refresh_sources,
     }
     return command_map[args.command](args)
 

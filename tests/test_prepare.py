@@ -7,60 +7,55 @@ from pathlib import Path
 
 from pptx import Presentation
 
-from autobloggy.artifacts import extract_frontmatter, read_sources
+from autobloggy.artifacts import extract_frontmatter
 from autobloggy.prepare import run_prepare
-from tests.helpers import copy_repo, resolve_generated_brief
+from tests.helpers import copy_repo, resolve_generated_strategy
 
 
-def test_prepare_supports_markdown_seed(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
+def test_prepare_supports_markdown_input(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
     repo = copy_repo(repo_root, tmp_path)
     monkeypatch.chdir(repo)
     slug = "prepare-markdown"
-    generated = run_prepare(slug, repo / "tests/fixtures/example_seed.md", "draft")
+    generated = run_prepare(slug, repo / "tests/fixtures/example_input.md", "draft")
 
     assert "draft" in generated
-    assert (repo / "posts" / slug / "claims.yaml").exists()
+    assert (repo / "posts" / slug / "draft.qmd").exists()
 
 
-def test_prepare_supports_seed_directory_with_supporting_files(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
+def test_prepare_supports_user_input_directory(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
     repo = copy_repo(repo_root, tmp_path)
     monkeypatch.chdir(repo)
-    slug = "prepare-seed-dir"
-    seed_root = repo / "posts" / slug / "seed"
-    seed_root.mkdir(parents=True, exist_ok=True)
-    seed_path = seed_root / "seed.md"
-    seed_path.write_text(
+    slug = "prepare-input-dir"
+    input_root = repo / "posts" / slug / "inputs" / "user_provided"
+    input_root.mkdir(parents=True, exist_ok=True)
+    input_path = input_root / "input.md"
+    input_path.write_text(
         """---
-title: Seed Directory Example
+title: Input Directory Example
 ---
 
-# Seed Directory Example
+# Input Directory Example
 
-Seed notes can live beside supporting files instead of cluttering the post root.
+User-provided notes can live beside supporting files instead of cluttering the post root.
 """,
         encoding="utf-8",
     )
-    (seed_root / "slides").mkdir()
-    (seed_root / "slides" / "overview.txt").write_text("Slide notes.", encoding="utf-8")
+    (input_root / "slides").mkdir()
+    (input_root / "slides" / "overview.txt").write_text("Slide notes.", encoding="utf-8")
 
-    generated = run_prepare(slug, seed_root, "claims")
+    generated = run_prepare(slug, input_root, "draft")
 
-    assert "claims" in generated
+    assert "draft" in generated
 
-    brief_frontmatter, _ = extract_frontmatter((repo / "posts" / slug / "brief.md").read_text(encoding="utf-8"))
-    assert brief_frontmatter["seed_path"] == str(seed_path)
-    assert brief_frontmatter["seed_root"] == str(seed_root)
-
-    sources = read_sources(repo / "posts" / slug / "sources.yaml")
-    seed_source = next(source for source in sources.sources if source.id == "src-seed")
-    assert seed_source.locator == str(seed_path)
-    assert str(seed_root) in (seed_source.notes or "")
+    strategy_frontmatter, _ = extract_frontmatter((repo / "posts" / slug / "strategy.md").read_text(encoding="utf-8"))
+    assert strategy_frontmatter["input_path"] == str(input_path)
+    assert strategy_frontmatter["input_root"] == str(input_root)
 
 
-def test_prepare_supports_pptx_seed(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
+def test_prepare_supports_pptx_input(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
     repo = copy_repo(repo_root, tmp_path)
     monkeypatch.chdir(repo)
-    pptx_path = tmp_path / "seed.pptx"
+    pptx_path = tmp_path / "input.pptx"
     presentation = Presentation()
     slide = presentation.slides.add_slide(presentation.slide_layouts[1])
     slide.shapes.title.text = "Checklist rollout"
@@ -68,22 +63,22 @@ def test_prepare_supports_pptx_seed(repo_root: Path, tmp_path: Path, monkeypatch
     presentation.save(pptx_path)
 
     slug = "prepare-pptx"
-    generated = run_prepare(slug, pptx_path, "claims")
+    generated = run_prepare(slug, pptx_path, "draft")
 
-    assert "claims" in generated
-    assert (repo / "posts" / slug / "sources.yaml").exists()
+    assert "draft" in generated
+    assert (repo / "posts" / slug / "draft.qmd").exists()
 
 
-def test_prepare_cleans_markdown_seed_before_generating_artifacts(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
+def test_prepare_cleans_markdown_input_before_generating_artifacts(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
     repo = copy_repo(repo_root, tmp_path)
     monkeypatch.chdir(repo)
-    seed_path = repo / "tests" / "fixtures" / "noisy_seed.md"
-    seed_path.write_text(
+    input_path = repo / "tests" / "fixtures" / "noisy_input.md"
+    input_path.write_text(
         """---
-title: Noisy Seed
+title: Noisy Input
 ---
 
-# Noisy Seed
+# Noisy Input
 
 Claude Code works in a terminal and can edit code across files.
 
@@ -98,60 +93,59 @@ NotebookLM works from a bounded source set and helps with synthesis before imple
     )
 
     slug = "prepare-noisy-markdown"
-    run_prepare(slug, seed_path, "draft")
+    run_prepare(slug, input_path, "draft")
 
-    brief_text = (repo / "posts" / slug / "brief.md").read_text(encoding="utf-8")
+    strategy_text = (repo / "posts" / slug / "strategy.md").read_text(encoding="utf-8")
     outline_text = (repo / "posts" / slug / "outline.md").read_text(encoding="utf-8")
-    claims_text = (repo / "posts" / slug / "claims.yaml").read_text(encoding="utf-8")
     draft_text = (repo / "posts" / slug / "draft.qmd").read_text(encoding="utf-8")
-    sources_text = (repo / "posts" / slug / "sources.yaml").read_text(encoding="utf-8")
 
-    assert "# Noisy Seed\n\n# Noisy Seed" not in draft_text
-    assert draft_text.count("# Noisy Seed") == 1
-    assert "## Noisy Seed" not in draft_text
+    assert "# Noisy Input\n\n# Noisy Input" not in draft_text
+    assert draft_text.count("# Noisy Input") == 1
+    assert "## Noisy Input" not in draft_text
     assert "Questions to answer" not in outline_text
-    assert "https://example.com/notebooklm" not in claims_text
-    assert sources_text.count("locator: https://example.com/notebooklm") == 1
+    assert "- " in outline_text
+    assert "https://example.com/notebooklm" not in draft_text
+    assert "## Evidence Standards" not in strategy_text
 
 
-def test_generate_brief_includes_required_voice_sections(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
+def test_generate_strategy_includes_required_voice_sections(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
     repo = copy_repo(repo_root, tmp_path)
     monkeypatch.chdir(repo)
-    slug = "prepare-brief-template"
-    seed_path = repo / "tests" / "fixtures" / "example_seed.md"
+    slug = "prepare-strategy-template"
+    input_path = repo / "tests" / "fixtures" / "example_input.md"
 
-    run_prepare(slug, seed_path, "brief")
+    run_prepare(slug, input_path, "strategy")
 
-    brief_text = (repo / "posts" / slug / "brief.md").read_text(encoding="utf-8")
-    assert "## Target Voice" in brief_text
-    assert "## Style Guardrails" in brief_text
-    assert "## Evidence Standards" in brief_text
-    assert "## Approval Checklist" in brief_text
-    assert "[REQUIRED:" in brief_text
-    assert "seed_root:" in brief_text
+    strategy_text = (repo / "posts" / slug / "strategy.md").read_text(encoding="utf-8")
+    assert "## Target Voice" in strategy_text
+    assert "## Style Guardrails" in strategy_text
+    assert "## Approval Checklist" in strategy_text
+    assert "## Evidence Standards" not in strategy_text
+    assert "[REQUIRED:" in strategy_text
+    assert "input_root:" in strategy_text
 
 
-def test_cli_requires_brief_approval_before_generating_draft(repo_root: Path, tmp_path: Path) -> None:
+def test_cli_requires_strategy_approval_before_generating_draft(repo_root: Path, tmp_path: Path) -> None:
     repo = copy_repo(repo_root, tmp_path)
     slug = "review-gated"
-    seed_path = repo / "tests" / "fixtures" / "example_seed.md"
+    input_path = repo / "tests" / "fixtures" / "example_input.md"
 
     first_prepare = subprocess.run(
-        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--seed", str(seed_path)],
+        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--input", str(input_path)],
         cwd=repo,
         env={**os.environ, "PYTHONPATH": str(repo / "src")},
         text=True,
         capture_output=True,
         check=True,
     )
-    assert "brief\t" in first_prepare.stdout
+    assert "strategy\t" in first_prepare.stdout
     assert not (repo / "posts" / slug / "draft.qmd").exists()
 
-    brief_path = repo / "posts" / slug / "brief.md"
-    brief_path.write_text(brief_path.read_text(encoding="utf-8") + "\nCustom review note.\n", encoding="utf-8")
+    strategy_path = repo / "posts" / slug / "strategy.md"
+    strategy_path.write_text(strategy_path.read_text(encoding="utf-8") + "\nCustom review note.\n", encoding="utf-8")
 
     rejected_approval = subprocess.run(
-        [sys.executable, "-m", "autobloggy.cli", "approve-brief", "--slug", slug],
+        [sys.executable, "-m", "autobloggy.cli", "approve-strategy", "--slug", slug],
         cwd=repo,
         env={**os.environ, "PYTHONPATH": str(repo / "src")},
         text=True,
@@ -159,12 +153,12 @@ def test_cli_requires_brief_approval_before_generating_draft(repo_root: Path, tm
         check=False,
     )
     assert rejected_approval.returncode != 0
-    assert "Brief is incomplete" in (rejected_approval.stdout + rejected_approval.stderr)
+    assert "Strategy is incomplete" in (rejected_approval.stdout + rejected_approval.stderr)
 
-    resolve_generated_brief(brief_path)
+    resolve_generated_strategy(strategy_path)
 
     blocked_prepare = subprocess.run(
-        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--seed", str(seed_path), "--through", "draft"],
+        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--input", str(input_path), "--through", "draft"],
         cwd=repo,
         env={**os.environ, "PYTHONPATH": str(repo / "src")},
         text=True,
@@ -172,20 +166,55 @@ def test_cli_requires_brief_approval_before_generating_draft(repo_root: Path, tm
         check=False,
     )
     assert blocked_prepare.returncode != 0
-    assert "approve-brief" in (blocked_prepare.stdout + blocked_prepare.stderr)
+    assert "approve-strategy" in (blocked_prepare.stdout + blocked_prepare.stderr)
 
     subprocess.run(
-        [sys.executable, "-m", "autobloggy.cli", "approve-brief", "--slug", slug],
+        [sys.executable, "-m", "autobloggy.cli", "approve-strategy", "--slug", slug],
         cwd=repo,
         env={**os.environ, "PYTHONPATH": str(repo / "src")},
         text=True,
         capture_output=True,
         check=True,
     )
-    assert "status: approved" in brief_path.read_text(encoding="utf-8")
+    assert "status: approved" in strategy_path.read_text(encoding="utf-8")
+
+    outline_prepare = subprocess.run(
+        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--input", str(input_path), "--through", "draft"],
+        cwd=repo,
+        env={**os.environ, "PYTHONPATH": str(repo / "src")},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert outline_prepare.returncode != 0
+    assert "outline\t" in outline_prepare.stdout
+    assert "approve-outline" in (outline_prepare.stdout + outline_prepare.stderr)
+    assert not (repo / "posts" / slug / "draft.qmd").exists()
+
+    blocked_outline = subprocess.run(
+        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--input", str(input_path), "--through", "draft"],
+        cwd=repo,
+        env={**os.environ, "PYTHONPATH": str(repo / "src")},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert blocked_outline.returncode != 0
+    assert "approve-outline" in (blocked_outline.stdout + blocked_outline.stderr)
+
+    subprocess.run(
+        [sys.executable, "-m", "autobloggy.cli", "approve-outline", "--slug", slug],
+        cwd=repo,
+        env={**os.environ, "PYTHONPATH": str(repo / "src")},
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    outline_path = repo / "posts" / slug / "outline.md"
+    assert "status: approved" in outline_path.read_text(encoding="utf-8")
 
     final_prepare = subprocess.run(
-        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--seed", str(seed_path), "--through", "draft"],
+        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--input", str(input_path), "--through", "draft"],
         cwd=repo,
         env={**os.environ, "PYTHONPATH": str(repo / "src")},
         text=True,
@@ -194,34 +223,4 @@ def test_cli_requires_brief_approval_before_generating_draft(repo_root: Path, tm
     )
     assert "draft\t" in final_prepare.stdout
     assert (repo / "posts" / slug / "draft.qmd").exists()
-    assert "Custom review note." in brief_path.read_text(encoding="utf-8")
-
-
-def test_cli_accepts_seed_directory(repo_root: Path, tmp_path: Path) -> None:
-    repo = copy_repo(repo_root, tmp_path)
-    slug = "review-seed-dir"
-    seed_root = repo / "posts" / slug / "seed"
-    seed_root.mkdir(parents=True, exist_ok=True)
-    seed_path = seed_root / "seed.md"
-    seed_path.write_text(
-        """# Seed Dir CLI
-
-Putting the seed under posts/<slug>/seed keeps related files together.
-""",
-        encoding="utf-8",
-    )
-    (seed_root / "images").mkdir()
-    (seed_root / "images" / "frame.txt").write_text("image placeholder", encoding="utf-8")
-
-    first_prepare = subprocess.run(
-        [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--seed", str(seed_root)],
-        cwd=repo,
-        env={**os.environ, "PYTHONPATH": str(repo / "src")},
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    assert "brief\t" in first_prepare.stdout
-
-    brief_path = repo / "posts" / slug / "brief.md"
-    assert f"seed_path: {seed_path}" in brief_path.read_text(encoding="utf-8")
+    assert "Custom review note." in strategy_path.read_text(encoding="utf-8")

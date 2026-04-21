@@ -2,7 +2,7 @@
 
 ## Visual Loop
 
-- Generate visual briefs from accepted claims and outline sections.
+- Generate visual strategies from accepted claims and outline sections.
 - Create diagram or image assets with a separate accept-or-retry loop.
 - Run deterministic asset checks and image-understanding verifiers before
   linking accepted assets into `draft.qmd`.
@@ -16,4 +16,3 @@
 
 - Add cross-post memory under `portfolio/` derived from accepted run logs.
 - Keep v1 focused on one post at a time.
-

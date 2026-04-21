@@ -6,8 +6,6 @@ checks:
   must_have_verifiers:
     - opening_clarity
     - paragraph_focus
-    - claim_support
-    - unsupported_superlatives
     - voice
     - overstatement
   improvement_verifiers:
@@ -20,5 +18,4 @@ loop:
   task_priority:
     - deterministic_blockers
     - must_have_verifiers
-    - claim_issues
     - hillclimb

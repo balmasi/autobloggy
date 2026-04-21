@@ -6,44 +6,6 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-class ClaimVerification(BaseModel):
-    claim_fingerprint: str | None = None
-    status: Literal["needs_rerun", "pass", "fail"] = "needs_rerun"
-    reason: str = "new"
-    checked_at: str | None = None
-
-
-class ClaimRecord(BaseModel):
-    id: str
-    text: str
-    section: str
-    source_ids: list[str] = Field(default_factory=list)
-    status: Literal["active", "inactive"] = "active"
-    last_verification: ClaimVerification = Field(default_factory=ClaimVerification)
-
-
-class ClaimsDocument(BaseModel):
-    claims: list[ClaimRecord] = Field(default_factory=list)
-
-
-class SourceSnippet(BaseModel):
-    id: str
-    text: str
-
-
-class SourceRecord(BaseModel):
-    id: str
-    title: str
-    kind: Literal["local_markdown", "local_pptx", "url", "manual"] = "manual"
-    locator: str
-    notes: str | None = None
-    snippets: list[SourceSnippet] = Field(default_factory=list)
-
-
-class SourcesDocument(BaseModel):
-    sources: list[SourceRecord] = Field(default_factory=list)
-
-
 class CheckResult(BaseModel):
     id: str
     passed: bool
@@ -75,7 +37,6 @@ class VerifierVerdict(BaseModel):
     scope: str
     status: Literal["needs_review", "pass", "fail"] = "needs_review"
     rationale: str = ""
-    evidence: list[str] = Field(default_factory=list)
 
 
 class EvaluationSummary(BaseModel):
@@ -84,12 +45,11 @@ class EvaluationSummary(BaseModel):
     target: str
     blocker_count: int
     must_have_verifier_fail_count: int
-    claim_issue_count: int
     improvement_fail_count: int
     readability_penalty: int
     banned_pattern_count: int
     passes_baseline: bool
-    acceptance_tuple: tuple[int, int, int, int, int, int]
+    acceptance_tuple: tuple[int, int, int, int, int]
     missing_verdicts: list[str] = Field(default_factory=list)
 
 
@@ -102,10 +62,8 @@ class RunState(BaseModel):
 class PostPaths(BaseModel):
     slug: str
     root: Path
-    seed_root: Path
-    brief: Path
+    user_provided_root: Path
+    strategy: Path
     outline: Path
-    claims: Path
-    sources: Path
     draft: Path
     runs: Path

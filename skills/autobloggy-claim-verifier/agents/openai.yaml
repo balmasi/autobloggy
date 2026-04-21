@@ -1,8 +1,0 @@
-interface:
-  display_name: "Autobloggy Claim Verifier"
-  short_description: "Check claim support against sources and context"
-  default_prompt: "Use $autobloggy-claim-verifier to verify whether these Autobloggy claims are actually supported."
-
-policy:
-  allow_implicit_invocation: true
-

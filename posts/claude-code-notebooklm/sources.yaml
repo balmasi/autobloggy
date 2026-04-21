@@ -32,14 +32,14 @@ sources:
       for automating Google NotebookLM, warns that it uses undocumented Google APIs,
       and documents installation with `pip install notebooklm-py` or `pip install
       "notebooklm-py[browser]"` for first-time browser login.
-- id: src-seed
+- id: src-user-input
   title: How to Use Claude Code and NotebookLM for a Digestible Content Infographic
     Pipeline
   kind: local_markdown
-  locator: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/seed/seed.md
-  notes: Original seed material. Supporting seed files live under /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/seed.
+  locator: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/inputs/user_provided/input.md
+  notes: Original user-provided material. Supporting files live under /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/inputs/user_provided.
   snippets:
-  - id: snip-seed-001
+  - id: snip-user-input-001
     text: Reading backlog is unmanageable, especially when it includes long papers,
       technical PDFs, and documents that matter but are not central enough to justify
       a full close read. The workflow pairs a coding agent with NotebookLM to compress

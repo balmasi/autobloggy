@@ -1,27 +1,28 @@
-# Brief Template Reference
+# Strategy Template Reference
 
-Use this file to structure the user interview and the final `brief.md`.
+Use this file to structure the user interview and the final `strategy.md`.
 
 ## Required Questions
 
 Ask until you can answer each item concretely:
 
-1. Who is the primary reader, and what job are they trying to do?
-2. What should the reader understand, decide, or do differently after reading?
-3. What voice should the post use? What existing writing should it feel like or avoid?
-4. What are the non-negotiable points, examples, or claims the post must cover?
-5. What should the post avoid in tone, framing, or argument?
-6. What evidence standard applies? Are primary sources required? Are anecdotes acceptable?
+1. What is the actual source material for this post, and has the user explicitly confirmed that it is the canonical input?
+2. Who is the primary reader, and what job are they trying to do?
+3. What should the reader understand, decide, or do differently after reading?
+4. What voice should the post use? What existing writing should it feel like or avoid?
+5. What are the non-negotiable points, examples, or edge cases the post must cover?
+6. What should the post avoid in tone, framing, or argument?
 
 If you are operating as an agent:
 
 - In Claude, prefer `AskUserTool` when it is available.
 - In Codex, prefer `request_user_input` when it is available.
-- If those tools are unavailable, ask the questions directly in chat before approving the brief.
+- If those tools are unavailable, ask the questions directly in chat before approving the strategy.
+- Do not treat test fixtures, examples, or active editor files as confirmed source material unless the user explicitly says to use them.
 
-## Required Brief Sections
+## Required Strategy Sections
 
-Every `brief.md` must include these sections before approval:
+Every `strategy.md` must include these sections before approval:
 
 - `Core Question`
 - `Audience`
@@ -30,11 +31,10 @@ Every `brief.md` must include these sections before approval:
 - `Style Guardrails`
 - `Must Cover`
 - `Must Avoid`
-- `Evidence Standards`
 - `Open Questions Before Approval`
 - `Approval Checklist`
 
-The generated brief may start with defaults, but approval should be blocked until the user-specific items are resolved.
+The generated strategy may start with defaults, but approval should be blocked until the user-specific items are resolved.
 
 ## Default Voice Starting Point
 
@@ -48,5 +48,5 @@ Write like a sharp practitioner explaining a hard-earned lesson to other capable
 - Lead with the real problem or mistaken assumption.
 - Explain through mechanisms, tradeoffs, and consequences.
 - Keep abstractions tied to implementation, decisions, or outcomes.
-- Sound opinionated when the evidence earns it, and precise when nuance matters.
+- Sound opinionated when the material earns it, and precise when nuance matters.
 - Make every paragraph useful to a capable reader.

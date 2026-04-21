@@ -3,37 +3,57 @@
 Title: NPS Is Overused. Build a Better CX Metric Stack.
 
 ## Opening
-Purpose: Explain opening with one clear argument and explicit evidence.
+- State the key question or tension behind opening.
+- Add concrete examples or operator detail for opening.
+- Show why opening matters for the reader's decision or workflow.
 
 ## Why NPS Became the Default
-Purpose: Explain why nps became the default with one clear argument and explicit evidence.
+- Why NPS became the default metric for executives and dashboards
 
 ## How NPS Works
-Purpose: Explain how nps works with one clear argument and explicit evidence.
+- State the key question or tension behind how nps works.
+- Add concrete examples or operator detail for how nps works.
+- Show why how nps works matters for the reader's decision or workflow.
 
 ## What NPS Throws Away
-Purpose: Explain what nps throws away with one clear argument and explicit evidence.
+- State the key question or tension behind what nps throws away.
+- Add concrete examples or operator detail for what nps throws away.
+- Show why what nps throws away matters for the reader's decision or workflow.
 
 ## The Distribution Problem
-Purpose: Explain the distribution problem with one clear argument and explicit evidence.
+- State the key question or tension behind the distribution problem.
+- Add concrete examples or operator detail for the distribution problem.
+- Show why the distribution problem matters for the reader's decision or workflow.
 
 ## Statistical Problems
-Purpose: Explain statistical problems with one clear argument and explicit evidence.
+- State the key question or tension behind statistical problems.
+- Add concrete examples or operator detail for statistical problems.
+- Show why statistical problems matters for the reader's decision or workflow.
 
 ## Intent Is Not Behavior
-Purpose: Explain intent is not behavior with one clear argument and explicit evidence.
+- State the key question or tension behind intent is not behavior.
+- Add concrete examples or operator detail for intent is not behavior.
+- Show why intent is not behavior matters for the reader's decision or workflow.
 
 ## How Organizations Misuse It
-Purpose: Explain how organizations misuse it with one clear argument and explicit evidence.
+- State the key question or tension behind how organizations misuse it.
+- Add concrete examples or operator detail for how organizations misuse it.
+- Show why how organizations misuse it matters for the reader's decision or workflow.
 
 ## How to Use NPS More Carefully
-Purpose: Explain how to use nps more carefully with one clear argument and explicit evidence.
+- How to use NPS more carefully if an organization insists on keeping it
 
 ## Better Metrics to Pair With NPS
-Purpose: Explain better metrics to pair with nps with one clear argument and explicit evidence.
+- State the key question or tension behind better metrics to pair with nps.
+- Add concrete examples or operator detail for better metrics to pair with nps.
+- Show why better metrics to pair with nps matters for the reader's decision or workflow.
 
 ## Practical Recommendation
-Purpose: Explain practical recommendation with one clear argument and explicit evidence.
+- State the key question or tension behind practical recommendation.
+- Add concrete examples or operator detail for practical recommendation.
+- Show why practical recommendation matters for the reader's decision or workflow.
 
 ## Conclusion
-Purpose: Explain conclusion with one clear argument and explicit evidence.
+- State the key question or tension behind conclusion.
+- Add concrete examples or operator detail for conclusion.
+- Show why conclusion matters for the reader's decision or workflow.

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tests.helpers import copy_repo, resolve_generated_brief, run_cli
+from tests.helpers import copy_repo, resolve_generated_strategy, run_cli
 
 
 def parse_kv(stdout: str) -> dict[str, str]:
@@ -18,11 +18,11 @@ def parse_kv(stdout: str) -> dict[str, str]:
 def test_stage_attempt_verify_and_evaluate_smoke(repo_root: Path, tmp_path: Path) -> None:
     repo = copy_repo(repo_root, tmp_path)
     slug = "example-post"
-    seed = repo / "tests" / "fixtures" / "example_seed.md"
-    run_cli(repo, "prepare", "--slug", slug, "--seed", str(seed), "--through", "brief")
-    resolve_generated_brief(repo / "posts" / slug / "brief.md")
-    run_cli(repo, "approve-brief", "--slug", slug)
-    run_cli(repo, "prepare", "--slug", slug, "--seed", str(seed), "--through", "draft")
+    input_path = repo / "tests" / "fixtures" / "example_input.md"
+    run_cli(repo, "prepare", "--slug", slug, "--input", str(input_path), "--through", "strategy")
+    resolve_generated_strategy(repo / "posts" / slug / "strategy.md")
+    run_cli(repo, "approve-strategy", "--slug", slug)
+    run_cli(repo, "prepare", "--slug", slug, "--input", str(input_path), "--through", "draft")
 
     staged = parse_kv(run_cli(repo, "stage-attempt", "--slug", slug).stdout)
     run_id = staged["run_id"]
@@ -32,8 +32,8 @@ def test_stage_attempt_verify_and_evaluate_smoke(repo_root: Path, tmp_path: Path
     draft = attempt_root / "draft.qmd"
     draft.write_text(
         draft.read_text(encoding="utf-8").replace(
-            "A small operational checklist can matter when it standardizes the evidence that\nan escalation needs and removes repeated lookup work.\n",
-            "A small operational checklist can matter when it standardizes the evidence an escalation needs and removes repeated lookup work.\n",
+            "Close with the practical takeaway.\n",
+            "Close with the practical takeaway.\n\nA concrete next step helps the reader act on the draft.\n",
         ),
         encoding="utf-8",
     )

@@ -8,7 +8,7 @@ from readability import Readability
 from readability.exceptions import ReadabilityException
 import yaml
 
-from .artifacts import cited_source_ids, extract_frontmatter, read_claims, read_sources, read_text
+from .artifacts import extract_frontmatter, read_text
 from .models import CheckResult, CheckSummary
 from .utils import now_iso, paragraphs, repo_root, words
 
@@ -114,34 +114,21 @@ def valid_heading_order(text: str) -> bool:
     return all(next_level - current_level <= 1 for current_level, next_level in zip(levels, levels[1:]))
 
 
-def run_checks(draft_path: Path, claims_path: Path, sources_path: Path) -> CheckSummary:
+def run_checks(draft_path: Path) -> CheckSummary:
     draft_text = read_text(draft_path)
     _, draft_body = extract_frontmatter(draft_text)
     if draft_body:
         draft_text = draft_body
-    claims_doc = read_claims(claims_path)
-    sources_doc = read_sources(sources_path)
-    source_ids = {source.id for source in sources_doc.sources}
     banned = load_banned_patterns()
 
     h1_count = len(re.findall(r"^#\s+.+$", draft_text, flags=re.MULTILINE))
     banned_hits = [pattern for pattern in banned if pattern.lower() in draft_text.lower()]
-    missing_claims = [
-        claim.id
-        for claim in claims_doc.claims
-        if claim.status == "active" and claim.text not in draft_text
-    ]
-
-    cited_ids = cited_source_ids(draft_text)
-    unknown_citations = sorted({source_id for source_id in cited_ids if source_id not in source_ids})
 
     results = [
         CheckResult(id="one_h1", passed=h1_count == 1, details=f"Found {h1_count} H1 headings."),
         CheckResult(id="heading_order", passed=valid_heading_order(draft_text), details="Heading levels must not jump by more than one."),
         CheckResult(id="intro_exists", passed=paragraph_intro_exists(draft_text), details="Intro paragraph must exist before deeper sections."),
         CheckResult(id="conclusion_exists", passed=conclusion_exists(draft_text), details="A conclusion heading is required."),
-        CheckResult(id="citations_resolve", passed=not unknown_citations, details=f"Unknown citekeys: {', '.join(unknown_citations) or 'none'}."),
-        CheckResult(id="claims_present", passed=not missing_claims, details=f"Missing active claim text in draft: {', '.join(missing_claims) or 'none'}."),
         CheckResult(id="code_fences_tagged", passed=code_fence_language_failures(draft_text) == 0, details="All fenced code blocks need a language tag."),
         CheckResult(id="latex_balance", passed=latex_failures(draft_text) == 0, details="Inline and display math delimiters must be balanced."),
         CheckResult(id="image_caption_alt", passed=image_caption_failures(draft_text) == 0, details="Images need alt text and a caption line."),

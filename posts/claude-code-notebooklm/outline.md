@@ -3,28 +3,40 @@
 Title: How to Use Claude Code and NotebookLM for a Digestible Content Infographic Pipeline
 
 ## Opening
-Purpose: Explain opening with one clear argument and explicit evidence.
+- State the key question or tension behind opening.
+- Add concrete evidence, examples, or operator detail for opening.
+- Show why opening matters for the reader's decision or workflow.
 
 ## Problem framing
-Purpose: Explain problem framing with one clear argument and explicit evidence.
+- Problem framing: backlog overload, especially for long non-core material
 
 ## Solution concept
-Purpose: Explain solution concept with one clear argument and explicit evidence.
+- Solution concept: Claude Code plus NotebookLM as a compression pipeline
 
 ## When and why to use it
-Purpose: Explain when and why to use it with one clear argument and explicit evidence.
+- State the key question or tension behind when and why to use it.
+- Add concrete evidence, examples, or operator detail for when and why to use it.
+- Show why when and why to use it matters for the reader's decision or workflow.
 
 ## Setup steps
-Purpose: Explain setup steps with one clear argument and explicit evidence.
+- State the key question or tension behind setup steps.
+- Add concrete evidence, examples, or operator detail for setup steps.
+- Show why setup steps matters for the reader's decision or workflow.
 
 ## Prompt and style guide
-Purpose: Explain prompt and style guide with one clear argument and explicit evidence.
+- State the key question or tension behind prompt and style guide.
+- Add concrete evidence, examples, or operator detail for prompt and style guide.
+- Show why prompt and style guide matters for the reader's decision or workflow.
 
 ## Example runs
-Purpose: Explain example runs with one clear argument and explicit evidence.
+- Three example runs: Cursor Composer 2, Meta TRIBE v2, Claude Mythos card
 
 ## Time savings and takeaways
-Purpose: Explain time savings and takeaways with one clear argument and explicit evidence.
+- State the key question or tension behind time savings and takeaways.
+- Add concrete evidence, examples, or operator detail for time savings and takeaways.
+- Show why time savings and takeaways matters for the reader's decision or workflow.
 
 ## Conclusion
-Purpose: Explain conclusion with one clear argument and explicit evidence.
+- State the key question or tension behind conclusion.
+- Add concrete evidence, examples, or operator detail for conclusion.
+- Show why conclusion matters for the reader's decision or workflow.

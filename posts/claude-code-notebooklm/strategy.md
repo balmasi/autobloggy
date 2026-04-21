@@ -2,9 +2,9 @@
 slug: claude-code-notebooklm
 title: How to Use Claude Code and NotebookLM for a Digestible Content Infographic
   Pipeline
-seed_path: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/seed/seed.md
-seed_root: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/seed
-seed_type: markdown
+input_path: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/inputs/user_provided/input.md
+input_root: /Users/balmasi/Projects/autobloggy/posts/claude-code-notebooklm/inputs/user_provided
+input_type: markdown
 generated_at: '2026-04-21T05:07:10+00:00'
 status: approved
 approved_at: '2026-04-21T05:08:06+00:00'
