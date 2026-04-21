@@ -7,9 +7,9 @@ draft artifact, and a keep-or-revert loop.
 ## Workflow
 
 1. `uv sync`
-2. Interview the user until you have a usable starting brief and seed.
+2. Interview the user until you have a usable starting brief and seed. The brief must capture audience, reader outcome, target voice, style guardrails, must-cover points, must-avoid points, and evidence standards.
 3. `uv run autobloggy prepare --slug example-post --seed tests/fixtures/example_seed.md --through brief`
-4. Review and edit `posts/<slug>/brief.md`
+4. Review and edit `posts/<slug>/brief.md` until every required prompt is resolved and the approval checklist is complete.
 5. `uv run autobloggy approve-brief --slug example-post`
 6. `uv run autobloggy prepare --slug example-post --seed tests/fixtures/example_seed.md --through draft`
 7. Review the generated post artifacts under `posts/<slug>/`
@@ -28,7 +28,7 @@ function create_blog_post(slug, seed):
     parse_seed(seed)
 
     if brief does not exist:
-        generate brief.md from seed
+        generate brief.md from seed and required brief template
         stop for human review
 
     if brief.md.status != "approved":
@@ -87,7 +87,8 @@ function create_blog_post(slug, seed):
   `sources.yaml`, and `draft.qmd` from a PPTX or Markdown seed. Defaults to
   `--through brief`.
 - `approve-brief`: marks `brief.md` as human-approved so downstream generation
-  can continue
+  can continue, but only after required brief fields and approval checklist items
+  are resolved
 - `stage-attempt`: creates a candidate workspace and a prompt pack for the next
   scoped edit
 - `check`: runs deterministic checks and writes a JSON summary

@@ -10,6 +10,8 @@
 
 - A human must review and approve `brief.md` before `claims.yaml` or the first `draft.qmd` are generated.
 - Do not start the first draft until the user has confirmed the brief.
+- `brief.md` is not approval-ready unless it includes concrete guidance for audience, reader outcome, target voice, style guardrails, must-cover points, must-avoid points, and evidence standards.
+- Defaults are allowed as a starting point, but unresolved required markers must be cleared before approval.
 
 ## Default Loop Order
 

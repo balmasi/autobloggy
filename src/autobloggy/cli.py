@@ -31,7 +31,7 @@ from .loop import (
     ensure_results_tsv,
 )
 from .models import SourceRecord, SourceSnippet
-from .prepare import parse_seed, run_prepare
+from .prepare import brief_approval_issues, parse_seed, run_prepare
 from .scoring import is_strict_improvement
 from .tasks import choose_next_task
 from .utils import ensure_dir, now_iso, repo_root
@@ -115,7 +115,11 @@ def command_approve_brief(args: argparse.Namespace) -> int:
     paths = post_paths(args.slug)
     if not paths.brief.exists():
         raise FileNotFoundError(f"Brief does not exist: {paths.brief}")
-    frontmatter, body = extract_frontmatter(read_text(paths.brief))
+    brief_text = read_text(paths.brief)
+    issues = brief_approval_issues(brief_text)
+    if issues:
+        raise SystemExit("Brief is incomplete:\n- " + "\n- ".join(issues))
+    frontmatter, body = extract_frontmatter(brief_text)
     frontmatter["status"] = "approved"
     frontmatter["approved_at"] = now_iso()
     write_text(paths.brief, format_markdown_with_frontmatter(frontmatter, body))

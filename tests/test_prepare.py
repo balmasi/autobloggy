@@ -11,6 +11,29 @@ from autobloggy.prepare import run_prepare
 from tests.helpers import copy_repo
 
 
+def resolve_generated_brief(brief_path: Path) -> None:
+    text = brief_path.read_text(encoding="utf-8")
+    replacements = {
+        "[REQUIRED: name the primary reader and the job they are trying to do.]": "Platform and product engineering leads who need operational guidance they can apply this quarter.",
+        "[REQUIRED: confirm or replace this with the user's preferred voice.]": "",
+        "[REQUIRED: edit these guardrails until they match the user's expectations for the piece.]": "",
+        "[REQUIRED: add or remove points until this captures the non-negotiable substance of the post.]": "",
+        "[REQUIRED: record any tones, claims, examples, or framing that should be avoided.]": "",
+        "- [REQUIRED: What specific reader or buyer context should shape the framing?]": "- The framing should help technical leaders decide whether this workflow is worth adopting for their team.",
+        "- [REQUIRED: Which claims or examples are mandatory because they matter to this audience?]": "- The post must include one concrete example, one tradeoff, and one boundary where the approach should not be used.",
+        "- [REQUIRED: What should the post sound like, and what should it never sound like?]": "- It should sound like a practiced operator and never like marketing copy or generic AI advice.",
+        "- [REQUIRED: What practical takeaway should the reader leave with?]": "- The reader should leave with a clear decision rule and a concrete next step.",
+        "- [ ] Audience is specific enough to guide structure and examples.": "- [x] Audience is specific enough to guide structure and examples.",
+        "- [ ] Target voice reflects the user's actual preference, not the default.": "- [x] Target voice reflects the user's actual preference, not the default.",
+        "- [ ] Style guardrails are concrete enough to guide generation.": "- [x] Style guardrails are concrete enough to guide generation.",
+        "- [ ] Must-cover points capture the non-negotiable substance of the post.": "- [x] Must-cover points capture the non-negotiable substance of the post.",
+        "- [ ] Must-avoid and evidence rules are explicit.": "- [x] Must-avoid and evidence rules are explicit.",
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    brief_path.write_text(text, encoding="utf-8")
+
+
 def test_prepare_supports_markdown_seed(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
     repo = copy_repo(repo_root, tmp_path)
     monkeypatch.chdir(repo)
@@ -78,6 +101,22 @@ NotebookLM works from a bounded source set and helps with synthesis before imple
     assert sources_text.count("locator: https://example.com/notebooklm") == 1
 
 
+def test_generate_brief_includes_required_voice_sections(repo_root: Path, tmp_path: Path, monkeypatch) -> None:
+    repo = copy_repo(repo_root, tmp_path)
+    monkeypatch.chdir(repo)
+    slug = "prepare-brief-template"
+    seed_path = repo / "tests" / "fixtures" / "example_seed.md"
+
+    run_prepare(slug, seed_path, "brief")
+
+    brief_text = (repo / "posts" / slug / "brief.md").read_text(encoding="utf-8")
+    assert "## Target Voice" in brief_text
+    assert "## Style Guardrails" in brief_text
+    assert "## Evidence Standards" in brief_text
+    assert "## Approval Checklist" in brief_text
+    assert "[REQUIRED:" in brief_text
+
+
 def test_cli_requires_brief_approval_before_generating_draft(repo_root: Path, tmp_path: Path) -> None:
     repo = copy_repo(repo_root, tmp_path)
     slug = "review-gated"
@@ -96,6 +135,19 @@ def test_cli_requires_brief_approval_before_generating_draft(repo_root: Path, tm
 
     brief_path = repo / "posts" / slug / "brief.md"
     brief_path.write_text(brief_path.read_text(encoding="utf-8") + "\nCustom review note.\n", encoding="utf-8")
+
+    rejected_approval = subprocess.run(
+        [sys.executable, "-m", "autobloggy.cli", "approve-brief", "--slug", slug],
+        cwd=repo,
+        env={**os.environ, "PYTHONPATH": str(repo / "src")},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert rejected_approval.returncode != 0
+    assert "Brief is incomplete" in (rejected_approval.stdout + rejected_approval.stderr)
+
+    resolve_generated_brief(brief_path)
 
     blocked_prepare = subprocess.run(
         [sys.executable, "-m", "autobloggy.cli", "prepare", "--slug", slug, "--seed", str(seed_path), "--through", "draft"],
