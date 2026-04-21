@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "ffmpeg-analyse-video": {
+      "source": "fabriqaai/ffmpeg-analyse-video-skill",
+      "sourceType": "github",
+      "computedHash": "333beca6cb64c984990076e05dd9d040cbef262c3f1232ecf17355d06ccf75ef"
+    }
+  }
+}
