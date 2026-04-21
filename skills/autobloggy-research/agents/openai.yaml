@@ -1,0 +1,7 @@
+interface:
+  display_name: "Autobloggy Research"
+  short_description: "Find and register web sources for unsupported claims"
+  default_prompt: "Use $autobloggy-research to find and register web sources for the unsupported claims on this post slug."
+
+policy:
+  allow_implicit_invocation: true
