@@ -5,9 +5,10 @@ import difflib
 import shutil
 from pathlib import Path
 
-from .artifacts import read_json, read_text, write_json, write_text
+from .artifacts import extract_frontmatter, post_paths, read_json, read_text, write_json, write_text
 from .checks import run_checks
 from .models import EvaluationSummary, RunState, VerifierVerdict
+from .presets import default_preset_name, preset_paths, repo_relative_path
 from .utils import ensure_dir, now_iso
 from .verifiers import VERIFIER_SPECS
 
@@ -98,8 +99,15 @@ def save_state(run_root: Path, state: RunState) -> None:
 
 
 def create_run(post_root: Path) -> tuple[str, Path]:
-    run_id = now_iso().replace(":", "-")
-    run_root = ensure_dir(post_root / "runs" / run_id)
+    base_run_id = now_iso().replace(":", "-")
+    run_id = base_run_id
+    suffix = 1
+    run_root = post_root / "runs" / run_id
+    while run_root.exists():
+        run_id = f"{base_run_id}-{suffix:02d}"
+        run_root = post_root / "runs" / run_id
+        suffix += 1
+    run_root = ensure_dir(run_root)
     ensure_dir(run_root / "attempts")
     ensure_results_tsv(run_root / "results.tsv")
     return run_id, run_root
@@ -151,9 +159,39 @@ def append_results(results_path: Path, attempt_id: str, task: str, decision: str
 
 
 def stage_prompt_pack(attempt_dir: Path, slug: str, task: dict) -> Path:
+    paths = post_paths(slug)
+    strategy_frontmatter, _ = extract_frontmatter(read_text(paths.strategy))
+    preset_name = str(strategy_frontmatter.get("preset") or default_preset_name())
+    reference_files = [
+        "program.md",
+        repo_relative_path(paths.strategy),
+    ]
+    if paths.outline.exists():
+        reference_files.append(repo_relative_path(paths.outline))
+
+    preset_file_keys = (
+        "preset_strategy_template",
+        "preset_writing_guide",
+        "preset_brand_guide",
+    )
+    preset_files = [str(strategy_frontmatter.get(key) or "").strip() for key in preset_file_keys]
+    if not all(preset_files):
+        preset = preset_paths(preset_name)
+        preset_files = [
+            repo_relative_path(preset.strategy_template),
+            repo_relative_path(preset.writing_guide),
+            repo_relative_path(preset.brand_guide),
+        ]
+    reference_files.extend(preset_files)
+
     content = "\n".join(
         [
             f"# Attempt Prompt: {slug}",
+            "",
+            f"Active preset: {preset_name}",
+            "",
+            "Read-only context:",
+            *[f"- {path}" for path in reference_files],
             "",
             "Editable files:",
             "- draft.qmd",
@@ -162,7 +200,7 @@ def stage_prompt_pack(attempt_dir: Path, slug: str, task: dict) -> Path:
             f"Task: {task['task']}",
             f"Reason: {task['reason']}",
             "",
-            "Keep changes narrow. Do not edit outline.md, strategy.md, program.md, or config.yaml.",
+            "Keep changes narrow. Read the context files first. Do not edit strategy.md, outline.md, program.md, config.yaml, or preset files.",
         ]
     )
     path = attempt_dir / "prompt-pack.md"

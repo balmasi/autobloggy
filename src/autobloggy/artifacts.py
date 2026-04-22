@@ -14,10 +14,16 @@ from .utils import ensure_dir, repo_root
 def post_paths(slug: str, root: Path | None = None) -> PostPaths:
     repo = repo_root(root)
     post_root = repo / "posts" / slug
+    discovery_root = post_root / "inputs" / "discovery"
+    user_provided_root = post_root / "inputs" / "user_provided"
     return PostPaths(
         slug=slug,
         root=post_root,
-        user_provided_root=post_root / "inputs" / "user_provided",
+        user_provided_root=user_provided_root,
+        main_input=user_provided_root / "input.md",
+        supporting_root=user_provided_root / "supporting",
+        discovery_root=discovery_root,
+        discovery_summary=discovery_root / "discovery.md",
         strategy=post_root / "strategy.md",
         outline=post_root / "outline.md",
         draft=post_root / "draft.qmd",

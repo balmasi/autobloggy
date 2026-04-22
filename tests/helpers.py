@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from autobloggy.artifacts import extract_frontmatter, format_markdown_with_frontmatter
+
 
 def copy_repo(src: Path, dest: Path) -> Path:
     target = dest / "repo"
@@ -30,6 +32,28 @@ def run_cli(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def run_cli_failure(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(repo / "src")
+    return subprocess.run(
+        [sys.executable, "-m", "autobloggy.cli", *args],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def parse_kv(stdout: str) -> dict[str, str]:
+    pairs = {}
+    for line in stdout.strip().splitlines():
+        if "\t" in line:
+            key, value = line.split("\t", 1)
+            pairs[key] = value
+    return pairs
+
+
 def resolve_generated_strategy(strategy_path: Path) -> None:
     text = strategy_path.read_text(encoding="utf-8")
     replacements = {
@@ -51,3 +75,24 @@ def resolve_generated_strategy(strategy_path: Path) -> None:
     for old, new in replacements.items():
         text = text.replace(old, new)
     strategy_path.write_text(text, encoding="utf-8")
+
+
+def resolve_generated_outline(outline_path: Path) -> None:
+    text = outline_path.read_text(encoding="utf-8")
+    frontmatter, _ = extract_frontmatter(text)
+    body = "\n".join(
+        [
+            "# Outline",
+            "",
+            "## Why this topic is confusing in practice",
+            "- Lead with the concrete reader confusion.",
+            "",
+            "## The distinction that matters most",
+            "- Explain the key distinction clearly.",
+            "",
+            "## What the reader should do with it",
+            "- End with the practical takeaway.",
+            "",
+        ]
+    )
+    outline_path.write_text(format_markdown_with_frontmatter(frontmatter, body), encoding="utf-8")

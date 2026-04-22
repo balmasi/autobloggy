@@ -59,10 +59,22 @@ class RunState(BaseModel):
     accepted_summary: EvaluationSummary | None = None
 
 
+class PresetPaths(BaseModel):
+    name: str
+    root: Path
+    strategy_template: Path
+    writing_guide: Path
+    brand_guide: Path
+
+
 class PostPaths(BaseModel):
     slug: str
     root: Path
     user_provided_root: Path
+    main_input: Path
+    supporting_root: Path
+    discovery_root: Path
+    discovery_summary: Path
     strategy: Path
     outline: Path
     draft: Path
