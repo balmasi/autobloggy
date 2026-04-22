@@ -1,0 +1,7 @@
+interface:
+  display_name: "Autobloggy New Post"
+  short_description: "Kick off a new Autobloggy post and review the strategy"
+  default_prompt: "Use $autobloggy-new-post to kick off a new Autobloggy post from a plain-language brief."
+
+policy:
+  allow_implicit_invocation: true

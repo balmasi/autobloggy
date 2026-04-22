@@ -1,0 +1,7 @@
+interface:
+  display_name: "Autobloggy Draft Loop"
+  short_description: "Run the attempt loop for an Autobloggy draft"
+  default_prompt: "Use $autobloggy-draft-loop to run the Autobloggy candidate edit, verify, and evaluate cycle."
+
+policy:
+  allow_implicit_invocation: true

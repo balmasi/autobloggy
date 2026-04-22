@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch",
+      "WebSearch",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__73d71c4b-bba2-477e-87bc-14673d8fa9d4__notion-fetch",
+      "mcp__Claude_Preview__preview_screenshot",
+      "mcp__73d71c4b-bba2-477e-87bc-14673d8fa9d4__notion-search",
+      "Bash(ffprobe *)"
+    ]
+  }
+}

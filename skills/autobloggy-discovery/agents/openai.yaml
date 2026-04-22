@@ -1,0 +1,7 @@
+interface:
+  display_name: "Autobloggy Discovery"
+  short_description: "Run an optional discovery sweep before outlining"
+  default_prompt: "Use $autobloggy-discovery to research the current Autobloggy post topic and synthesize discovery findings."
+
+policy:
+  allow_implicit_invocation: true

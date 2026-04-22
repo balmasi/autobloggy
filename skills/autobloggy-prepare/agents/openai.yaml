@@ -1,7 +1,0 @@
-interface:
-  display_name: "Autobloggy Prepare"
-  short_description: "Create Autobloggy post artifacts from user-provided input"
-  default_prompt: "Use $autobloggy-prepare to generate or refresh the Autobloggy post artifacts for this user-provided input."
-
-policy:
-  allow_implicit_invocation: true
