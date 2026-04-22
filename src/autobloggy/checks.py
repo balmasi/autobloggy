@@ -83,9 +83,16 @@ def image_caption_failures(text: str) -> int:
 
 def code_fence_language_failures(text: str) -> int:
     failures = 0
+    in_fence = False
     for line in text.splitlines():
-        if line.startswith("```") and line.strip() == "```":
-            failures += 1
+        if not line.startswith("```"):
+            continue
+        if in_fence:
+            in_fence = False
+        else:
+            in_fence = True
+            if line.strip() == "```":
+                failures += 1
     return failures
 
 
@@ -104,7 +111,43 @@ def paragraph_intro_exists(text: str) -> bool:
 
 
 def conclusion_exists(text: str) -> bool:
-    return bool(re.search(r"^##\s+(Conclusion|Takeaways?|Closing)\b", text, flags=re.MULTILINE | re.IGNORECASE))
+    if re.search(r"^##\s+(Conclusion|Takeaways?|Closing)\b", text, flags=re.MULTILINE | re.IGNORECASE):
+        return True
+
+    sections = re.findall(r"^##\s+(.+)$", text, flags=re.MULTILINE)
+    if len(sections) < 3:
+        return False
+
+    matches = list(re.finditer(r"^##\s+.+$", text, flags=re.MULTILINE))
+    if not matches:
+        return False
+    last_heading = matches[-1]
+    trailing_body = text[last_heading.end() :].strip()
+    return len(words(trailing_body)) >= 20
+
+
+def generic_heading_labels(text: str) -> list[str]:
+    labels: list[str] = []
+    generic_labels = {
+        "hook",
+        "opening",
+        "context",
+        "thesis",
+        "problem",
+        "what changed",
+        "what it means",
+        "decision table",
+        "implications",
+        "closing",
+        "drafting notes",
+        "notes for drafting",
+    }
+    for match in re.finditer(r"^##\s+(.+)$", text, flags=re.MULTILINE):
+        heading = match.group(1).strip()
+        lowered = heading.casefold()
+        if lowered in generic_labels or lowered.startswith("body section "):
+            labels.append(heading)
+    return labels
 
 
 def valid_heading_order(text: str) -> bool:
@@ -123,10 +166,17 @@ def run_checks(draft_path: Path) -> CheckSummary:
 
     h1_count = len(re.findall(r"^#\s+.+$", draft_text, flags=re.MULTILINE))
     banned_hits = [pattern for pattern in banned if pattern.lower() in draft_text.lower()]
+    generic_headings = generic_heading_labels(draft_text)
 
     results = [
         CheckResult(id="one_h1", passed=h1_count == 1, details=f"Found {h1_count} H1 headings."),
         CheckResult(id="heading_order", passed=valid_heading_order(draft_text), details="Heading levels must not jump by more than one."),
+        CheckResult(
+            id="presentable_headings",
+            passed=not generic_headings,
+            details="Replace outline-style section headings with publishable, reader-facing titles. "
+            f"Found: {', '.join(generic_headings) or 'none'}.",
+        ),
         CheckResult(id="intro_exists", passed=paragraph_intro_exists(draft_text), details="Intro paragraph must exist before deeper sections."),
         CheckResult(id="conclusion_exists", passed=conclusion_exists(draft_text), details="A conclusion heading is required."),
         CheckResult(id="code_fences_tagged", passed=code_fence_language_failures(draft_text) == 0, details="All fenced code blocks need a language tag."),

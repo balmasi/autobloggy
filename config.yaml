@@ -1,3 +1,7 @@
+prepare:
+  default_preset: default
+  presets_dir: presets
+
 readability:
   target_flesch_kincaid_grade_level: 10
   allowed_grade_level_deviation: 1
@@ -8,6 +12,9 @@ checks:
     - paragraph_focus
     - voice
     - overstatement
+    - portfolio_company_disclosure
+    - research_citation
+    - performance_metrics_disclosure
   improvement_verifiers:
     - specificity
     - so_what
