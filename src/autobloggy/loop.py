@@ -184,6 +184,14 @@ def stage_prompt_pack(attempt_dir: Path, slug: str, task: dict) -> Path:
         ]
     reference_files.extend(preset_files)
 
+    batch = task.get("batch") or []
+    batch_extras = [item for item in batch if item.get("id") != task["task"]]
+    batch_lines: list[str] = []
+    if task["priority"] == "deterministic_blockers" and batch_extras:
+        batch_lines.append("")
+        batch_lines.append("Also fix these deterministic blockers in the same edit:")
+        batch_lines.extend(f"- {item['id']}: {item['reason']}" for item in batch_extras)
+
     content = "\n".join(
         [
             f"# Attempt Prompt: {slug}",
@@ -199,8 +207,10 @@ def stage_prompt_pack(attempt_dir: Path, slug: str, task: dict) -> Path:
             f"Priority lane: {task['priority']}",
             f"Task: {task['task']}",
             f"Reason: {task['reason']}",
+            *batch_lines,
             "",
-            "Keep changes narrow. Read the context files first. Do not edit strategy.md, outline.md, program.md, config.yaml, or preset files.",
+            "Fix every deterministic blocker listed above in a single edit. Keep semantic and stylistic changes narrow to the primary task.",
+            "Read the context files first. Do not edit strategy.md, outline.md, program.md, config.yaml, or preset files.",
         ]
     )
     path = attempt_dir / "prompt-pack.md"

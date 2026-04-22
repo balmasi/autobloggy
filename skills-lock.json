@@ -14,7 +14,12 @@
     "autobloggy-draft-loop": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "baeffdd2df3b449fc36519cccbfda1d4d1b7c0d9f31455dd00edb4d3b89de5b3"
+      "computedHash": "6d1fbe164de0e32e67f66fcfc001240014d15b0088b37be08fdb7b2e7823c611"
+    },
+    "autobloggy-first-draft": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "a00cc356cc79ea8b58ac4f845d8447df5ae83a1e6c84432aa18ab68b9d0eb09d"
     },
     "autobloggy-new-post": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",

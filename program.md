@@ -19,6 +19,7 @@
   - `autobloggy generate-outline`
   - `autobloggy generate-draft`
 - `new-post` owns the default input home: `posts/<slug>/inputs/user_provided/`.
+- After `generate-draft` has produced the scaffold, the agent may edit `posts/<slug>/draft.qmd` once via skill `autobloggy-first-draft` to turn the scaffold into a real first draft. After that edit, `draft.qmd` becomes read-only again and the attempt loop owns further changes.
 - During the attempt loop, the agent may edit only `posts/<slug>/runs/<run-id>/attempts/<attempt-id>/draft.qmd`.
 - `program.md`, `config.yaml`, everything under `presets/`, and everything under `shared/` are read-only during a run.
 - Do not edit committed `posts/<slug>/strategy.md`, `outline.md`, or `draft.qmd` manually during the attempt loop. Use the CLI stages and `evaluate`.
@@ -59,7 +60,7 @@ Agent action: Run `autobloggy approve-outline --slug <slug>` only after the huma
 
 9. Generate the first draft.
 Owner: Agent.
-Agent action: Run `autobloggy generate-draft --slug <slug>`.
+Agent action: Run `autobloggy generate-draft --slug <slug>` to produce the deterministic scaffold, then use skill `autobloggy-first-draft` to rewrite `posts/<slug>/draft.qmd` into a real first draft using the approved strategy, outline, input bundle, and preset writing and brand guides. Do not stage the first attempt until the rewrite is complete.
 
 10. Run the attempt loop.
 Owner: Agent.
