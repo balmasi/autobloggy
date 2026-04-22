@@ -1,7 +1,3 @@
----
-title: How to Use Claude Code and NotebookLM for a Digestible Content Infographic Pipeline
----
-
 # How to Use Claude Code and NotebookLM for a Digestible Content Infographic Pipeline
 
 Reading backlog is unmanageable, especially when it includes long papers, technical PDFs, and documents that matter but are not central enough to justify a full close read.

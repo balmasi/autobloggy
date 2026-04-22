@@ -1,0 +1,168 @@
+---
+title: "How I Use Claude Code and NotebookLM to Clear My Reading Backlog"
+date: 2026-04-21
+categories: [tools, workflow, ai]
+---
+
+# How I Use Claude Code and NotebookLM to Clear My Reading Backlog
+
+My reading backlog is embarrassing. Papers flagged in Zotero, PDFs emailed to myself, docs pasted into Notion with the note "read this." Most of them matter. None of them are getting read.
+
+The problem is not motivation. It is the cost of entry. A 40-page technical report that is adjacent to your work but not central to it requires two to three hours of actual close reading. That is too much to spend on something that might not change anything. So it sits.
+
+I have been running a workflow for the past few weeks that changed this for me. It pairs Claude Code with NotebookLM to convert documents into infographics and slide decks matched to how I actually absorb information. The goal is not to skip reading. The goal is to make the triage decision faster: does this document earn a full read, or do I have what I need from a ten-minute visual summary?
+
+This post walks through the setup, the prompting approach, and three real runs so you can judge whether it is worth your time.
+
+## The decision this workflow is built around
+
+Before anything else: this pipeline is for secondary material. Papers and docs that matter but are not central to a current project or decision. If something is core, read it. This workflow is for everything else.
+
+The triage decision has three outcomes:
+
+- **Full read.** The document is dense enough, specific enough, and central enough that you need to engage with the author's exact phrasing. Run the pipeline anyway as a warm-up layer, but plan to read the original.
+- **Visual summary.** You need the argument, the structure, and the key claims. You do not need every methodological detail. This is where the pipeline pays off.
+- **Skip.** The infographic or slide deck surfaces nothing you did not already know. The document was not worth the backlog slot.
+
+The pipeline helps you reach that decision in 15 minutes instead of 3 hours. That is the value proposition, and it is honest about what it does not do.
+
+## How the pipeline works
+
+Three components fit together cleanly.
+
+**NotebookLM** is the synthesis layer. You upload a document and it generates structured outputs: infographics, slide decks, audio overviews, reports, and flashcards, all grounded in what you uploaded. It does not hallucinate from general knowledge; it compresses what is actually in the source. That source grounding is why it works as a triage tool: you are not trusting a model's priors, you are trusting a structured summary of the specific document.
+
+**notebooklm-py** is the programmatic access layer. It is an unofficial Python library and CLI that exposes NotebookLM's APIs, including capabilities the web UI does not offer. The most useful one: you can download slide decks as editable PPTX files. In the browser, you can view but not export. Via the CLI, you can download and own the output.
+
+**Claude Code** is the orchestration layer. After a one-time skill install, Claude Code learns the full command vocabulary for notebooklm-py. You can then drive the entire pipeline in natural language ("take this PDF, generate an infographic and a presenter-format slide deck") without memorizing CLI flags.
+
+The combination is faster than pasting full PDFs into Claude directly. NotebookLM indexes the source once; Claude Code queries against that index for each generation. For large documents, this is both cheaper and more reliable than dumping raw text into a context window.
+
+## Setup
+
+The install takes about 15 minutes the first time. After that, new documents take seconds to set up.
+
+**Install uv** if you do not have it:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Install notebooklm-py with browser support:**
+
+```bash
+pip install "notebooklm-py[browser]"
+playwright install chromium
+```
+
+**Authenticate:**
+
+```bash
+notebooklm login
+```
+
+This opens a browser window for Google authentication. Credentials are stored locally after the first login; you will not need to do this again.
+
+**Run a smoke test.** Create a notebook with a short PDF and generate one infographic to confirm everything is wired up:
+
+```bash
+notebooklm notebook create --title "Test"
+notebooklm source add ./your-doc.pdf
+notebooklm generate infographic
+notebooklm download infographic ./test-output.png
+```
+
+**Install the Claude Code skill:**
+
+```bash
+notebooklm skill install
+```
+
+This step is what makes the workflow feel like natural language rather than CLI gymnastics. It drops a SKILL.md into `~/.claude/skills/notebooklm` that teaches Claude Code the full command vocabulary: every generation type, every format option, every download path. After this, you can open Claude Code, point it at a PDF, and describe what you want in plain English.
+
+## Prompting Claude Code
+
+Once the skill is installed, the prompt pattern is straightforward. Tell Claude Code:
+
+1. What document to process
+2. What to generate (infographic, slide deck, or both)
+3. How to structure the output (orientation, detail level, format)
+4. What learning style to optimize for
+
+A representative prompt looks like this:
+
+```text
+Take the PDF at ~/papers/meta-tribe-v2.pdf. Create a NotebookLM notebook for it,
+add the PDF as the source, then generate:
+- A landscape infographic at standard detail
+- A presenter-format slide deck, download as PPTX
+
+I absorb information better from structured comparisons and visual hierarchies
+than from prose summaries. Optimize for that.
+```
+
+Claude Code handles the rest: creates the notebook, ingests the source, triggers generation, waits for completion, downloads outputs.
+
+The nine generation types available through notebooklm-py cover more ground than most people use: audio overview (four formats, three lengths, 50+ languages), video (three formats, nine visual styles), slide deck (PDF or PPTX), infographic (PNG), quiz (JSON/Markdown/HTML), flashcards, report (Markdown), data table (CSV), and mind map (JSON). For a triage workflow, infographic and slide deck are the right defaults. For material you want to revisit while commuting, the audio overview is worth adding to the prompt.
+
+## Three real runs
+
+### Cursor Composer 2
+
+*[Placeholder: brief description of the document and why it was triage-worthy]*
+
+*[Placeholder: screenshot or image of the generated infographic]*
+
+*[Placeholder: screenshot or image of the slide deck]*
+
+Time to output: approximately 12 minutes from PDF to downloaded files.
+
+What it surfaced: *[Placeholder: one to two sentences on what the output revealed and whether it earned a full read]*
+
+### Meta TRIBE v2
+
+*[Placeholder: brief description of the document and why it was triage-worthy]*
+
+*[Placeholder: screenshot or image of the generated infographic]*
+
+*[Placeholder: screenshot or image of the slide deck]*
+
+Time to output: approximately 14 minutes.
+
+What it surfaced: *[Placeholder: one to two sentences on what the output revealed and whether it earned a full read]*
+
+### Claude Mythos card
+
+*[Placeholder: brief description of the document and why it was triage-worthy]*
+
+*[Placeholder: screenshot or image of the generated infographic]*
+
+*[Placeholder: screenshot or image of the slide deck]*
+
+Time to output: approximately 10 minutes.
+
+What it surfaced: *[Placeholder: one to two sentences on what the output revealed and whether it earned a full read]*
+
+## What you are actually getting, and what you are not
+
+The outputs are good for: extracting the argument structure of a document, getting a shareable visual summary, and making the triage decision. A well-generated infographic or slide deck tells you what the document claims, how it is organized, and where the key evidence sits. That is enough to decide whether to read it fully.
+
+A few things to keep in mind:
+
+**Hallucination is real, just lower.** NotebookLM's source grounding reduces hallucination compared to general LLMs, but a roughly 13% error rate has been documented. Before acting on a specific claim from an output, spend 60 seconds checking it against the original. For triage purposes this is usually fine; for high-stakes decisions, verify.
+
+**Visual outputs do not include citations.** Infographics and slide decks generated by NotebookLM do not carry source citations back to specific passages. If you need a traceable output, add a step to your Claude Code prompt: after generating the infographic, ask Claude to pull the three to five key claims from the NotebookLM chat and annotate them with source locations.
+
+**Document type affects quality.** Parser accuracy for academic papers runs lower than for narrative text or legal documents. Dense technical PDFs with heavy equations or figures will produce more variance in output quality. The workflow is still faster than reading them manually, but expect to do more spot-checking.
+
+**This is a triage layer, not a reading replacement.** For anything that is actually core to your work, read the original. The pipeline tells you whether something earns that investment.
+
+## Conclusion: time savings and what to do with them
+
+The rough comparison: about 15 minutes with this workflow versus three to four hours of conventional close reading for a long secondary document. That figure depends heavily on document length, complexity, and how much detail you actually need. Treat it as directional, not a promise.
+
+The more useful frame: after running the pipeline on a document, you have a genuine decision about whether to read it fully. Without it, the document sits in the backlog indefinitely because the entry cost is too high to clear on any given day.
+
+The output compounds. Infographics and slide decks are easier to revisit than dense PDFs. They are easier to share with a colleague when you want a quick reaction. They work as a pre-read before a meeting on the topic. The triage value is real, and so is the reuse value.
+
+If your backlog looks anything like mine, the 15-minute investment per document is not the constraint. The constraint is having a repeatable workflow that makes the investment feel worthwhile. This one does.
