@@ -34,6 +34,64 @@ Georgian is a growth-equity fund that invests in AI-native software companies. T
 | Captions & Footnotes | Proxima Nova Italic | Arial Italic | 12–14px, Navy or Gray |
 | Pull Quotes | Proxima Nova Bold | Georgia Bold Italic | Large, left-aligned, coloured |
 
+## Visual Identity
+
+### Colour Tokens
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--color-brand-blue` | `#2746DA` | Dominant backgrounds, primary series, key connectors |
+| `--color-brand-yellow` | `#F8DB31` | Secondary series, highlighted callouts, emphasis fills |
+| `--color-brand-navy` | `#012970` | Body text, headers, labels, overlay text on light surfaces |
+| `--color-brand-orange` | `#F7901E` | Tertiary chart series only |
+| `--color-brand-light-orange` | `#F1BC0B` | Use only alongside Yellow, never standalone |
+| `--color-brand-gray` | `#EBEBEB` | Backgrounds, dividers, low-emphasis surfaces |
+| `--color-brand-white` | `#FFFFFF` | Inverted text and clean surface areas |
+
+Do not invent alternate brand colours. Quote these hex values exactly in generated CSS.
+
+### Typography Tokens
+
+| Token | Stack | Usage |
+|-------|-------|-------|
+| `--font-display` | `"Playfair Display", Georgia, serif` | Large headlines and hero numerals |
+| `--font-heading` | `"Proxima Nova", "Avenir Next", "Trebuchet MS", sans-serif` | Section titles and callout headers |
+| `--font-body` | `"Proxima Nova", Arial, Calibri, sans-serif` | Body text, labels, captions |
+| `--font-accent` | `"Proxima Nova", Georgia, serif` | Pull quotes and emphasized callouts |
+
+Use sentence case except where the brand guide already specifies all-caps section headers.
+
+### Chart Palette
+
+Use this order unless the brief explicitly needs fewer series:
+
+1. `--color-brand-blue`
+2. `--color-brand-yellow`
+3. `--color-brand-orange`
+
+`--color-brand-light-orange` may appear only as a supporting accent next to Yellow. Charts should use direct labels where possible, with a short source caption beneath the visual.
+
+### Component Patterns
+
+- `pull-quote-band`: Blue or Navy background with White text, or Yellow background with Navy text
+- `operator-framework`: 3-5 labeled columns or cards showing steps, criteria, or tradeoffs
+- `portfolio-proof-strip`: restrained metric or evidence cards, never a noisy dashboard
+
+Include subtle dividers, generous whitespace, and simple geometric framing over decorative illustration.
+
+### Iconography And External Libraries
+
+- Icons: use a restrained stroke icon set; prefer Lucide or inline SVG equivalents
+- External libraries: allow hosted web fonts, one charting library if needed, and an icon CDN only when inline SVG is impractical
+
+Keep the file self-contained beyond that allowlist.
+
+### Aspect Ratios
+
+- Default embed: `16 / 9`
+- Side-by-side comparison or framework: `4 / 3`
+- Pull quote or tall process: `3 / 4`
+
 ## Disclosures
 
 Copy the exact text below into the CMS footnote field when applicable.

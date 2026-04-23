@@ -24,17 +24,20 @@ Read `references/kickoff-reference.md` before you interview the user or approve 
    - the likely audience
    - must-cover points
    - must-avoid framing or tone
-6. If the user already has source files, use `posts/<slug>/inputs/user_provided/` as the default home for them.
-7. If the user passes file paths directly, let `autobloggy new-post` copy them into `inputs/user_provided/supporting/`.
-8. Never infer the intended source from active files, open tabs, tests, or example posts.
+6. If the user already has source files, use `posts/<slug>/inputs/user_provided/raw/` as the default home for them.
+7. Conversational kickoff briefs belong only in `posts/<slug>/inputs/user_provided/brief.md`.
+8. If the user passes file paths directly, let `autobloggy new-post` copy them into `inputs/user_provided/raw/`.
+9. Never write generated files under `inputs/user_provided/`. Deterministic extracts and the canonical bundle belong under `inputs/extracted/` and `inputs/prepared/`.
+10. Never infer the intended source from active files, open tabs, tests, or example posts.
 
 ## Execution
 
-9. Run `autobloggy new-post`.
-10. Read the generated `strategy.md` plus the active preset files.
-11. Ask only the follow-up strategy questions needed to resolve the required fields from `references/kickoff-reference.md`.
-12. Help edit `strategy.md` until the required sections are concrete and every unresolved marker is cleared.
-13. Do not approve the strategy while any required marker or unchecked approval item remains.
+11. Run `autobloggy new-post`.
+12. If the repo now has raw files or a substantive brief but no prepared input bundle, run `autobloggy prepare-inputs --slug <slug>`.
+13. Read the generated `strategy.md` plus the active preset files.
+14. Ask only the follow-up strategy questions needed to resolve the required fields from `references/kickoff-reference.md`.
+15. Help edit `strategy.md` until the required sections are concrete and every unresolved marker is cleared.
+16. Do not approve the strategy while any required marker or unchecked approval item remains.
 
 ## Do Not
 

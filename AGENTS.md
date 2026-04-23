@@ -34,7 +34,9 @@ uv run autobloggy stage-attempt --slug my-post --new-run
 | Path | Purpose |
 |------|---------|
 | `program.md` | Canonical workflow, gates, and named skill invocations |
-| `posts/<slug>/inputs/user_provided/` | Default home for the post brief and supporting files |
+| `posts/<slug>/inputs/user_provided/` | Human-owned brief plus raw source files |
+| `posts/<slug>/inputs/extracted/` | Deterministic text and visual extracts |
+| `posts/<slug>/inputs/prepared/` | Canonical LLM-facing input bundle and manifest |
 | `posts/<slug>/` | Per-post artifacts (`strategy.md`, `outline.md`, `draft.qmd`) |
 | `presets/<name>/` | Editorial packs (`strategy_template.md`, `writing_guide.md`, `brand_guide.md`) |
 | `config.yaml` | Repo-level config including `prepare.default_preset` |
@@ -55,18 +57,25 @@ uv run autobloggy stage-attempt --slug my-post --new-run
 ## Skills
 
 - Edit only `skills/` source files.
-- Reinstall generated agent copies after skill changes:
+- Reinstall generated agent symlinks after skill changes:
 
 ```bash
-npx skills add ./skills --skill <name> --agent 'claude-code,codex' -y --copy
+npx skills add ./skills --skill <name> -y --agent claude-code codex
 ```
 
 - Use the skill named by `program.md`.
 
+## Rules
+Keeping the orchestrator (main agent) context window minimal is critical.
+- When doing work that can be done in parallel use parallel subagents
+- When doing work that is independent you can use a general purpose subagent with a clean context and wait for the results
+
 ## Invariants
 
 - `program.md` is authoritative for the workflow.
-- `posts/<slug>/inputs/user_provided/` is the default input home.
+- `posts/<slug>/inputs/user_provided/brief.md` is the only conversational brief file.
+- `posts/<slug>/inputs/user_provided/raw/` is the only home for human-dropped source files.
+- `posts/<slug>/inputs/extracted/` and `posts/<slug>/inputs/prepared/` are deterministic outputs only.
 - `strategy.md` is the post-specific source of truth once approved.
 - Only attempt candidates under `posts/<slug>/runs/.../draft.qmd` are editable during the loop.
 - Never edit files under `.agents/skills/` or `.claude/skills/` directly.

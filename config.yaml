@@ -19,6 +19,22 @@ checks:
     - specificity
     - so_what
     - filler_hype
+visual_checks:
+  must_have_verifiers:
+    - visual_relevance
+    - text_visual_alignment
+    - source_attribution
+    - layout_integrity
+  improvement_verifiers:
+    - brand_consistency
+    - composition_clarity
+  verifier_viewport_widths:
+    - 360
+    - 820
+  allowed_script_src_hosts:
+    - cdn.jsdelivr.net
+    - unpkg.com
+    - cdnjs.cloudflare.com
 loop:
   max_iterations: 25
   time_budget_minutes: 180

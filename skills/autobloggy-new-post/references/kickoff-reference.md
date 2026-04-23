@@ -16,7 +16,7 @@ The default preset is the repo's general editorial pack. A new preset is appropr
 Ask until you can answer each item concretely:
 
 1. What is the actual post topic or operator problem?
-2. What files already live under `posts/<slug>/inputs/user_provided/`, if any?
+2. What belongs in `posts/<slug>/inputs/user_provided/brief.md`, and what raw files already live under `posts/<slug>/inputs/user_provided/raw/`, if any?
 3. Who is the primary reader, and what job are they trying to do?
 4. What should the reader understand, decide, or do differently after reading?
 5. What voice should the post use? What should it avoid sounding like?

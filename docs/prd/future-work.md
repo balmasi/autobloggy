@@ -2,15 +2,11 @@
 
 ## Visual Loop
 
-- Generate visual strategies from accepted claims and outline sections.
-- Create diagram or image assets with a separate accept-or-retry loop.
-- Run deterministic asset checks and image-understanding verifiers before
-  linking accepted assets into `draft.qmd`.
+Tracked in [visual-generation.md](visual-generation.md).
 
 ## Render And Export
 
-- Add Quarto/Pandoc-backed HTML and PDF rendering once the text loop is stable.
-- Add CMS payload export after the citation and asset contracts settle.
+Tracked in [visual-generation.md](visual-generation.md) (Epic 6).
 
 ## Portfolio Memory
 
@@ -25,3 +21,5 @@
 - better unified abstraction for verifiers (llm) and checks (programmatic), or multi-agent verifiers (e.g. subagent swarm - such as those that might be used to verify claims/prevent hallucinations)
 
 - simplify the revision pipeline, so that it just gets all the changes at once.
+
+- See if research forms a unique opinion and enriches around that. We want the take to be unique.

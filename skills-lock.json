@@ -19,17 +19,27 @@
     "autobloggy-first-draft": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "a00cc356cc79ea8b58ac4f845d8447df5ae83a1e6c84432aa18ab68b9d0eb09d"
+      "computedHash": "63d1a4aa1ce43414037af1a6b568fb61af8b6c229380b3c0ed3e43bc3d0a6416"
     },
     "autobloggy-new-post": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "33106c7d8a9b4760fc4d11ea816f85da0ece681ef44c07df56e6c53c0d476c29"
+      "computedHash": "a1d00f0435d1eba6209d5a12b68c1f0fe059c76ae173ed929eddc36fdcc456c2"
     },
     "autobloggy-transcribe": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
       "computedHash": "e9658168c4c2d3baafd4d0e10caca499f086845678844f54637747b685c6a41e"
+    },
+    "autobloggy-visual-verifier": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "02625d4a00998dc38bf7fb19bd8842ee1ac5b0829ddaaacd92caaab16904ddc6"
+    },
+    "autobloggy-visuals": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "b06acae49f00e37066d6e45c2d6a254b10275e13f51742340349107dd5cd1ece"
     },
     "ffmpeg-analyse-video": {
       "source": "fabriqaai/ffmpeg-analyse-video-skill",

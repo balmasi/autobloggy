@@ -6,7 +6,17 @@ from pathlib import Path
 
 from pptx import Presentation
 
-from .artifacts import extract_frontmatter, format_markdown_with_frontmatter, post_paths, read_text, write_text
+from .artifacts import (
+    extract_frontmatter,
+    format_markdown_with_frontmatter,
+    post_paths,
+    read_text,
+    read_yaml,
+    text_fingerprint,
+    write_text,
+    write_yaml,
+)
+from .models import InputManifest, InputTextSource, InputVisualSource
 from .presets import default_preset_name, preset_paths, presets_root, repo_relative_path, strategy_frontmatter_preset
 from .utils import ensure_dir, now_iso, sentences, slugify
 
@@ -54,7 +64,10 @@ UNRESOLVED_STRATEGY_MARKERS = (
     "- [ ]",
 )
 
-SUPPORTED_INPUT_SUFFIXES = {".md", ".markdown", ".qmd", ".txt", ".pptx"}
+TEXT_INPUT_SUFFIXES = {".md", ".markdown", ".qmd", ".txt"}
+PRESENTATION_SUFFIXES = {".pptx"}
+SUPPORTED_INPUT_SUFFIXES = TEXT_INPUT_SUFFIXES | PRESENTATION_SUFFIXES
+RAW_VISUAL_SUFFIXES = {".png", ".jpg", ".jpeg", ".svg", ".webp", ".gif"}
 PREFERRED_INPUT_FILENAMES = (
     "input.md",
     "input.markdown",
@@ -62,6 +75,19 @@ PREFERRED_INPUT_FILENAMES = (
     "input.txt",
     "input.pptx",
 )
+INPUT_BUNDLE_EXCLUDED_HEADINGS = {
+    "brief",
+    "input sources",
+    "raw text sources",
+    "extracted text sources",
+    "raw visual sources",
+    "extracted visual sources",
+    "text source notes",
+    "supporting material notes",
+    "links",
+    "notes",
+    "sources",
+}
 
 
 def markdown_headings(text: str) -> list[tuple[int, str]]:
@@ -70,7 +96,8 @@ def markdown_headings(text: str) -> list[tuple[int, str]]:
 
 
 def clean_markdown_input_text(text: str) -> str:
-    lines = [line for line in text.splitlines() if not re.match(r"^\s*#{1,6}\s+", line)]
+    cleaned = re.sub(r"<!--[\s\S]*?-->", "", text)
+    lines = [line for line in cleaned.splitlines() if not re.match(r"^\s*#{1,6}\s+", line)]
     cleaned = "\n".join(lines)
     cleaned = re.sub(r"https?://[^\s)]+", "", cleaned)
     cleaned = re.sub(r"[ \t]+\n", "\n", cleaned)
@@ -79,7 +106,6 @@ def clean_markdown_input_text(text: str) -> str:
 
 
 def usable_markdown_headings(text: str, title: str) -> list[str]:
-    excluded = {"questions", "questions to answer", "links", "notes", "sources"}
     headings: list[str] = []
     seen: set[str] = set()
     title_slug = slugify(title)
@@ -87,7 +113,7 @@ def usable_markdown_headings(text: str, title: str) -> list[str]:
         heading_slug = slugify(heading)
         if heading_slug == title_slug:
             continue
-        if heading.lower() in excluded:
+        if heading.casefold() in INPUT_BUNDLE_EXCLUDED_HEADINGS:
             continue
         if level == 1:
             continue
@@ -126,19 +152,16 @@ def is_relative_to(path: Path, parent: Path) -> bool:
         return False
 
 
+def post_relative_path(path: Path, post_root: Path) -> str:
+    return str(path.resolve().relative_to(post_root.resolve()))
+
+
 def supported_source_files(root: Path) -> list[Path]:
     if root.is_file():
         return [root] if root.suffix.lower() in SUPPORTED_INPUT_SUFFIXES else []
     if not root.exists():
         raise FileNotFoundError(f"Source path does not exist: {root}")
     return sorted(path for path in root.rglob("*") if path.is_file() and path.suffix.lower() in SUPPORTED_INPUT_SUFFIXES)
-
-
-def user_asset_files(input_root: Path, exclude: set[Path] | None = None) -> list[Path]:
-    excluded = {path.resolve() for path in (exclude or set())}
-    if not input_root.exists():
-        return []
-    return sorted(path for path in input_root.rglob("*") if path.is_file() and path.resolve() not in excluded)
 
 
 def resolve_input_path(input_candidate: Path) -> Path:
@@ -169,17 +192,10 @@ def resolve_input_path(input_candidate: Path) -> Path:
     )
 
 
-def resolve_main_input_path(input_root: Path) -> Path:
-    input_path = input_root / "input.md"
-    if input_path.exists():
-        return input_path
-    return resolve_input_path(input_root)
-
-
 def parse_input(input_path: Path) -> InputContent:
     input_path = resolve_input_path(input_path)
     suffix = input_path.suffix.lower()
-    if suffix in {".md", ".markdown", ".qmd", ".txt"}:
+    if suffix in TEXT_INPUT_SUFFIXES:
         raw = read_text(input_path)
         frontmatter, body = extract_frontmatter(raw)
         body_headings = markdown_headings(body)
@@ -189,7 +205,7 @@ def parse_input(input_path: Path) -> InputContent:
         headings = usable_markdown_headings(body, title)
         return InputContent(title=title, text=cleaned_text, headings=headings, urls=urls, kind="markdown")
 
-    if suffix == ".pptx":
+    if suffix in PRESENTATION_SUFFIXES:
         presentation = Presentation(input_path)
         slide_titles: list[str] = []
         fragments: list[str] = []
@@ -290,82 +306,164 @@ def render_strategy_template(template_text: str, context: dict[str, str]) -> str
     return rendered.strip() + "\n"
 
 
-def supporting_input_contents(input_root: Path, main_input: Path) -> list[tuple[Path, InputContent]]:
-    supporting: list[tuple[Path, InputContent]] = []
-    for asset in user_asset_files(input_root, exclude={main_input}):
-        if asset.suffix.lower() not in SUPPORTED_INPUT_SUFFIXES:
-            continue
-        supporting.append((asset, parse_input(asset)))
-    return supporting
-
-
-def merge_input_contents(main_input: Path, main_content: InputContent, supporting: list[tuple[Path, InputContent]]) -> InputContent:
-    headings = main_content.headings[:]
-    urls = main_content.urls[:]
-    text_parts = [main_content.text] if main_content.text else []
-
-    for path, content in supporting:
-        label = path.name
-        if content.text.strip():
-            text_parts.append(f"{label}\n{content.text.strip()}")
-        headings.extend([content.title, *content.headings])
-        urls.extend(content.urls)
-
-    return InputContent(
-        title=main_content.title,
-        text="\n\n".join(part for part in text_parts if part.strip()).strip(),
-        headings=dedupe_preserving_order(headings),
-        urls=dedupe_preserving_order(urls),
-        kind=main_content.kind if not supporting else "bundle",
+def render_user_input_readme() -> str:
+    return "\n".join(
+        [
+            "# User Inputs",
+            "",
+            "Use this folder only for human-owned material.",
+            "",
+            "- Put the plain-language post brief in `brief.md`.",
+            "- Put original source files and folders under `raw/`.",
+            "- Do not put generated files under `user_provided/`.",
+            "- `../extracted/` contains deterministic extracts. It can be rebuilt.",
+            "- `../prepared/` contains the canonical LLM-facing bundle. It can be rebuilt.",
+            "",
+        ]
     )
 
 
-def load_post_input_bundle(slug: str) -> tuple[Path, InputContent, list[Path]]:
+def render_brief_template() -> str:
+    return "\n".join(
+        [
+            "<!--",
+            "Add the plain-language brief here when you are not giving it conversationally.",
+            "Include the topic, audience, must-cover points, and must-avoid framing.",
+            "-->",
+            "",
+        ]
+    )
+
+
+def scaffold_input_layout(slug: str) -> dict[str, str]:
     paths = post_paths(slug)
-    main_input = resolve_main_input_path(paths.user_provided_root)
-    main_content = parse_input(main_input)
-    supporting = supporting_input_contents(paths.user_provided_root, main_input)
-    bundle = merge_input_contents(main_input, main_content, supporting)
-    return main_input, bundle, [path for path, _ in supporting]
+    ensure_dir(paths.user_provided_root)
+    ensure_dir(paths.user_raw_root)
+    ensure_dir(paths.extracted_text_root)
+    ensure_dir(paths.extracted_visual_root)
+    ensure_dir(paths.prepared_root)
+    ensure_dir(paths.discovery_root)
 
+    if not paths.user_readme.exists():
+        write_text(paths.user_readme, render_user_input_readme())
+    if not paths.user_brief.exists():
+        write_text(paths.user_brief, render_brief_template())
 
-def derive_title(topic: str | None, supporting: list[tuple[Path, InputContent]], assets: list[Path]) -> str:
-    if topic and topic.strip():
-        for line in topic.splitlines():
-            cleaned = line.strip()
-            if cleaned:
-                return cleaned.rstrip(".")
-    if supporting:
-        return supporting[0][1].title
-    if assets:
-        return humanize_name(assets[0].stem)
-    return "Untitled post"
-
-
-def render_input_markdown(title: str, topic: str | None, input_root: Path, assets: list[Path], supporting: list[tuple[Path, InputContent]]) -> str:
-    lines = [f"# {title}", ""]
-
-    if topic and topic.strip():
-        lines.extend([topic.strip(), ""])
-    else:
-        lines.extend(["This post starts from the files currently under `inputs/user_provided/`.", ""])
-
-    if assets:
-        lines.extend(["## Supporting Materials", ""])
-        lines.extend(f"- `{path.relative_to(input_root)}`" for path in assets)
-        lines.append("")
-
-    if supporting:
-        lines.extend(["## Supporting Material Notes", ""])
-        for path, content in supporting:
-            summary = summarize_text(content.text, 2) or f"Supporting material from {path.name}."
-            lines.extend([f"### {path.relative_to(input_root)}", "", summary, ""])
-
-    frontmatter = {
-        "title": title,
-        "generated_at": now_iso(),
+    return {
+        "slug": slug,
+        "brief": str(paths.user_brief),
+        "raw": str(paths.user_raw_root),
+        "prepared": str(paths.prepared_root),
     }
-    return format_markdown_with_frontmatter(frontmatter, "\n".join(lines).strip() + "\n")
+
+
+def render_brief_markdown(title: str | None, topic: str) -> str:
+    heading = title or next((line.strip().rstrip(".") for line in topic.splitlines() if line.strip()), "Post brief")
+    lines = [f"# {heading}", "", topic.strip(), ""]
+    return "\n".join(lines)
+
+
+def brief_has_substance(brief_path: Path) -> bool:
+    if not brief_path.exists():
+        return False
+    raw = read_text(brief_path)
+    _, body = extract_frontmatter(raw)
+    cleaned = clean_markdown_input_text(body or raw)
+    return bool(cleaned)
+
+
+def load_brief_content(slug: str) -> InputContent | None:
+    paths = post_paths(slug)
+    if not brief_has_substance(paths.user_brief):
+        return None
+    return parse_input(paths.user_brief)
+
+
+def load_input_manifest(manifest_path: Path) -> InputManifest:
+    if not manifest_path.exists():
+        return InputManifest(generated_at=now_iso())
+    raw = read_yaml(manifest_path) or {}
+    if not raw:
+        return InputManifest(generated_at=now_iso())
+    return InputManifest.model_validate(raw)
+
+
+def write_input_manifest(manifest_path: Path, manifest: InputManifest) -> None:
+    write_yaml(manifest_path, manifest.model_dump(mode="json"))
+
+
+def legacy_user_files(slug: str) -> list[Path]:
+    paths = post_paths(slug)
+    if not paths.user_provided_root.exists():
+        return []
+    legacy_files: list[Path] = []
+    for candidate in sorted(paths.user_provided_root.rglob("*")):
+        if not candidate.is_file():
+            continue
+        relative = candidate.relative_to(paths.user_provided_root).as_posix()
+        if relative in {"README.md", "brief.md", "input.md"}:
+            continue
+        if relative.startswith("raw/") or relative.startswith("supporting/"):
+            continue
+        legacy_files.append(candidate)
+    return legacy_files
+
+
+def raw_source_files(slug: str) -> list[Path]:
+    paths = post_paths(slug)
+    candidates: list[Path] = []
+    for root in (paths.user_raw_root, paths.legacy_supporting_root):
+        if root.exists():
+            candidates.extend(path for path in root.rglob("*") if path.is_file())
+    candidates.extend(legacy_user_files(slug))
+
+    deduped: dict[Path, Path] = {}
+    for candidate in candidates:
+        deduped[candidate.resolve()] = candidate
+    return sorted(deduped.values(), key=lambda path: post_relative_path(path, paths.root))
+
+
+def enough_input_exists(slug: str) -> bool:
+    paths = post_paths(slug)
+    if brief_has_substance(paths.user_brief):
+        return True
+    if raw_source_files(slug):
+        return True
+    return paths.legacy_main_input.exists()
+
+
+def candidate_title_from_content(content: InputContent | None) -> str | None:
+    if content is None:
+        return None
+    normalized = content.title.strip().rstrip(".")
+    if normalized and normalized.casefold() not in {"brief", "input"}:
+        return normalized
+    for line in content.text.splitlines():
+        cleaned = line.strip().rstrip(".")
+        if cleaned:
+            return cleaned
+    return None
+
+
+def derived_title(
+    brief_content: InputContent | None,
+    raw_text_contents: list[tuple[InputTextSource, InputContent]],
+    extracted_text_contents: list[tuple[InputTextSource, InputContent]],
+    raw_visual_sources: list[InputVisualSource],
+    fallback: str = "Untitled post",
+) -> str:
+    brief_title = candidate_title_from_content(brief_content)
+    if brief_title:
+        return brief_title
+    for entry, content in [*raw_text_contents, *extracted_text_contents]:
+        title = candidate_title_from_content(content)
+        if title:
+            return title
+        if entry.title:
+            return entry.title
+    if raw_visual_sources:
+        return humanize_name(Path(raw_visual_sources[0].path).stem)
+    return fallback
 
 
 def copy_user_source(source: Path, destination_root: Path) -> Path:
@@ -384,6 +482,313 @@ def copy_user_source(source: Path, destination_root: Path) -> Path:
         shutil.copy2(source, target)
         return target
     raise FileNotFoundError(f"Source path does not exist: {source}")
+
+
+def normalize_artifact_stem(path: Path, post_root: Path) -> str:
+    relative = post_relative_path(path, post_root)
+    return slugify(str(Path(relative).with_suffix("")))
+
+
+def visual_source_id(relative_path: str, kind: str, source_file: str, source_locator: str | None) -> str:
+    stem = slugify(Path(relative_path).stem)[:32]
+    suffix = text_fingerprint(
+        {
+            "path": relative_path,
+            "kind": kind,
+            "source_file": source_file,
+            "source_locator": source_locator or "",
+        }
+    )[:8]
+    return f"{stem}-{suffix}"
+
+
+def existing_visual_metadata(manifest: InputManifest) -> dict[str, InputVisualSource]:
+    entries = [*manifest.raw_visual_sources, *manifest.extracted_visual_sources]
+    return {entry.path: entry for entry in entries}
+
+
+def build_visual_source(
+    *,
+    path: Path,
+    kind: str,
+    source_file: str,
+    post_root: Path,
+    source_locator: str | None = None,
+    width_px: int | None = None,
+    height_px: int | None = None,
+    existing: InputVisualSource | None = None,
+) -> InputVisualSource:
+    relative_path = post_relative_path(path, post_root)
+    return InputVisualSource(
+        id=(existing.id if existing else visual_source_id(relative_path, kind, source_file, source_locator)),
+        path=relative_path,
+        kind=kind,
+        source_file=source_file,
+        source_locator=source_locator,
+        width_px=width_px if width_px is not None else (existing.width_px if existing else None),
+        height_px=height_px if height_px is not None else (existing.height_px if existing else None),
+        caption=existing.caption if existing else "",
+        description=existing.description if existing else "",
+        tags=list(existing.tags) if existing else [],
+    )
+
+
+def write_extracted_text(path: Path, content: InputContent, slug: str) -> Path:
+    paths = post_paths(slug)
+    output_path = paths.extracted_text_root / f"{normalize_artifact_stem(path, paths.root)}.md"
+    body_lines = [f"# {content.title}", ""]
+    if content.text.strip():
+        body_lines.extend([content.text.strip(), ""])
+    else:
+        body_lines.extend([f"Deterministic extract from `{post_relative_path(path, paths.root)}`.", ""])
+    frontmatter = {
+        "title": content.title,
+        "source_file": post_relative_path(path, paths.root),
+        "generated_at": now_iso(),
+    }
+    write_text(output_path, format_markdown_with_frontmatter(frontmatter, "\n".join(body_lines).strip() + "\n"))
+    return output_path
+
+
+def extract_pptx_visuals(path: Path, slug: str, existing_by_path: dict[str, InputVisualSource]) -> list[InputVisualSource]:
+    paths = post_paths(slug)
+    presentation = Presentation(path)
+    output_root = ensure_dir(paths.extracted_visual_root / normalize_artifact_stem(path, paths.root))
+    source_file = post_relative_path(path, paths.root)
+    visual_sources: list[InputVisualSource] = []
+
+    for slide_index, slide in enumerate(presentation.slides, start=1):
+        picture_index = 0
+        for shape in slide.shapes:
+            if not hasattr(shape, "image"):
+                continue
+            picture_index += 1
+            image = shape.image
+            extension = image.ext or "bin"
+            output_path = output_root / f"slide-{slide_index:02d}-{picture_index:02d}.{extension}"
+            output_path.write_bytes(image.blob)
+            width_px: int | None = None
+            height_px: int | None = None
+            try:
+                width_px, height_px = image.size
+            except Exception:
+                width_px, height_px = None, None
+            relative_path = post_relative_path(output_path, paths.root)
+            visual_sources.append(
+                build_visual_source(
+                    path=output_path,
+                    kind="pptx_extract",
+                    source_file=source_file,
+                    post_root=paths.root,
+                    source_locator=f"slide {slide_index}, picture {picture_index}",
+                    width_px=width_px,
+                    height_px=height_px,
+                    existing=existing_by_path.get(relative_path),
+                )
+            )
+
+    return visual_sources
+
+
+def render_prepared_input_markdown(
+    *,
+    title: str,
+    slug: str,
+    brief_content: InputContent | None,
+    raw_text_contents: list[tuple[InputTextSource, InputContent]],
+    extracted_text_contents: list[tuple[InputTextSource, InputContent]],
+    raw_visual_sources: list[InputVisualSource],
+    extracted_visual_sources: list[InputVisualSource],
+) -> str:
+    lines = [f"# {title}", ""]
+
+    if brief_content and brief_content.text.strip():
+        lines.extend(["## Brief", "", brief_content.text.strip(), ""])
+    else:
+        lines.extend(["This post starts from the files and extracts currently recorded for the post.", ""])
+
+    lines.extend(["## Input Sources", ""])
+
+    lines.extend(["### Raw Text Sources", ""])
+    if raw_text_contents:
+        lines.extend(f"- `{entry.path}`" for entry, _ in raw_text_contents)
+    else:
+        lines.append("- None")
+    lines.append("")
+
+    lines.extend(["### Extracted Text Sources", ""])
+    if extracted_text_contents:
+        lines.extend(f"- `{entry.path}` (from `{entry.extracted_from}`)" for entry, _ in extracted_text_contents)
+    else:
+        lines.append("- None")
+    lines.append("")
+
+    lines.extend(["### Raw Visual Sources", ""])
+    if raw_visual_sources:
+        lines.extend(f"- `{entry.path}`" for entry in raw_visual_sources)
+    else:
+        lines.append("- None")
+    lines.append("")
+
+    lines.extend(["### Extracted Visual Sources", ""])
+    if extracted_visual_sources:
+        lines.extend(f"- `{entry.path}` (from `{entry.source_file}`)" for entry in extracted_visual_sources)
+    else:
+        lines.append("- None")
+    lines.append("")
+
+    all_text_sources = [*raw_text_contents, *extracted_text_contents]
+    if all_text_sources:
+        lines.extend(["## Text Source Notes", ""])
+        for entry, content in all_text_sources:
+            label = content.title.strip() or humanize_name(Path(entry.path).stem)
+            summary = summarize_text(content.text, 2) or f"Supporting material from `{entry.path}`."
+            lines.extend([f"### {label}", "", f"Source: `{entry.path}`", "", summary, ""])
+
+    frontmatter = {
+        "title": title,
+        "generated_at": now_iso(),
+        "slug": slug,
+    }
+    return format_markdown_with_frontmatter(frontmatter, "\n".join(lines).strip() + "\n")
+
+
+def manifest_text_source_paths(manifest: InputManifest, slug: str) -> list[Path]:
+    paths = post_paths(slug)
+    text_entries = [*manifest.raw_text_sources, *manifest.extracted_text_sources]
+    resolved: list[Path] = []
+    for entry in text_entries:
+        resolved.append(paths.root / entry.path)
+    return resolved
+
+
+def prepare_post_inputs(slug: str, require_sources: bool = True) -> dict[str, str]:
+    paths = post_paths(slug)
+    scaffold_input_layout(slug)
+
+    existing_manifest = load_input_manifest(paths.input_manifest)
+    existing_visuals = existing_visual_metadata(existing_manifest)
+
+    if paths.extracted_text_root.exists():
+        shutil.rmtree(paths.extracted_text_root)
+    if paths.extracted_visual_root.exists():
+        shutil.rmtree(paths.extracted_visual_root)
+    ensure_dir(paths.extracted_text_root)
+    ensure_dir(paths.extracted_visual_root)
+    ensure_dir(paths.prepared_root)
+
+    brief_content = load_brief_content(slug)
+    discovered_raw_files = raw_source_files(slug)
+
+    raw_text_contents: list[tuple[InputTextSource, InputContent]] = []
+    extracted_text_contents: list[tuple[InputTextSource, InputContent]] = []
+    raw_visual_sources: list[InputVisualSource] = []
+    extracted_visual_sources: list[InputVisualSource] = []
+
+    for path in discovered_raw_files:
+        suffix = path.suffix.lower()
+        relative_path = post_relative_path(path, paths.root)
+        if suffix in TEXT_INPUT_SUFFIXES:
+            content = parse_input(path)
+            raw_text_contents.append(
+                (
+                    InputTextSource(
+                        path=relative_path,
+                        kind=content.kind,
+                        title=content.title,
+                        headings=content.headings,
+                    ),
+                    content,
+                )
+            )
+            continue
+
+        if suffix in PRESENTATION_SUFFIXES:
+            content = parse_input(path)
+            extracted_path = write_extracted_text(path, content, slug)
+            extracted_content = parse_input(extracted_path)
+            extracted_text_contents.append(
+                (
+                    InputTextSource(
+                        path=post_relative_path(extracted_path, paths.root),
+                        kind="pptx_extract",
+                        title=extracted_content.title,
+                        headings=extracted_content.headings,
+                        extracted_from=relative_path,
+                    ),
+                    extracted_content,
+                )
+            )
+            extracted_visual_sources.extend(extract_pptx_visuals(path, slug, existing_visuals))
+            continue
+
+        if suffix in RAW_VISUAL_SUFFIXES:
+            raw_visual_sources.append(
+                build_visual_source(
+                    path=path,
+                    kind="raw_visual",
+                    source_file=relative_path,
+                    post_root=paths.root,
+                    existing=existing_visuals.get(relative_path),
+                )
+            )
+
+    if not brief_content and not raw_text_contents and not extracted_text_contents and not raw_visual_sources and not extracted_visual_sources:
+        if paths.legacy_main_input.exists():
+            legacy_content = parse_input(paths.legacy_main_input)
+            raw_text_contents.append(
+                (
+                    InputTextSource(
+                        path=post_relative_path(paths.legacy_main_input, paths.root),
+                        kind="legacy_input_bundle",
+                        title=legacy_content.title,
+                        headings=legacy_content.headings,
+                    ),
+                    legacy_content,
+                )
+            )
+        elif require_sources:
+            raise ValueError(
+                f"No post brief or raw source files found for `{slug}`. Add content to {paths.user_brief} or place files under {paths.user_raw_root}, then run `autobloggy prepare-inputs --slug {slug}`."
+            )
+
+    title = derived_title(brief_content, raw_text_contents, extracted_text_contents, raw_visual_sources, humanize_name(slug))
+    prepared_input = render_prepared_input_markdown(
+        title=title,
+        slug=slug,
+        brief_content=brief_content,
+        raw_text_contents=raw_text_contents,
+        extracted_text_contents=extracted_text_contents,
+        raw_visual_sources=raw_visual_sources,
+        extracted_visual_sources=extracted_visual_sources,
+    )
+    write_text(paths.prepared_input, prepared_input)
+
+    manifest = InputManifest(
+        generated_at=now_iso(),
+        brief=(post_relative_path(paths.user_brief, paths.root) if brief_content else None),
+        raw_text_sources=[entry for entry, _ in raw_text_contents],
+        extracted_text_sources=[entry for entry, _ in extracted_text_contents],
+        raw_visual_sources=raw_visual_sources,
+        extracted_visual_sources=extracted_visual_sources,
+        canonical_input=post_relative_path(paths.prepared_input, paths.root),
+    )
+    write_input_manifest(paths.input_manifest, manifest)
+
+    return {
+        "brief": str(paths.user_brief),
+        "manifest": str(paths.input_manifest),
+        "input": str(paths.prepared_input),
+    }
+
+
+def load_post_input_bundle(slug: str) -> tuple[Path, InputContent, list[Path]]:
+    paths = post_paths(slug)
+    if not paths.prepared_input.exists() or not paths.input_manifest.exists():
+        prepare_post_inputs(slug, require_sources=True)
+    input_content = parse_input(paths.prepared_input)
+    manifest = load_input_manifest(paths.input_manifest)
+    return paths.prepared_input, input_content, manifest_text_source_paths(manifest, slug)
 
 
 def generate_strategy(
@@ -405,6 +810,7 @@ def generate_strategy(
         "input_path": str(input_path),
         "input_root": str(input_root),
         "input_type": input_content.kind,
+        "input_manifest": repo_relative_path(post_paths(slug, repo_context).input_manifest, repo_context),
         "preset": preset.name,
         "preset_dir": repo_relative_path(preset.root, repo_context),
         "preset_strategy_template": strategy_template_path,
@@ -520,42 +926,46 @@ def run_new_post(
 ) -> dict[str, str]:
     source_paths = [path.resolve() for path in (source_paths or [])]
     if not slug and not title and not topic and not source_paths:
-        raise ValueError("new-post requires a topic, a title, a slug for an existing input folder, or at least one --source.")
+        raise ValueError("new-post requires a slug, a topic, a title, or at least one --source.")
 
     derived_slug = slug
     if not derived_slug:
-        preview_assets = source_paths[:1]
-        preview_title = title or derive_title(topic, [], preview_assets)
+        preview_title = title or next((path.stem for path in source_paths if path.name), None) or topic or "post"
         derived_slug = slugify(preview_title)
 
     paths = post_paths(derived_slug)
     if paths.strategy.exists() or paths.outline.exists() or paths.draft.exists():
         raise ValueError(f"Post `{derived_slug}` already has generated artifacts. Use the existing post commands for that post.")
 
-    ensure_dir(paths.user_provided_root)
+    payload = scaffold_input_layout(derived_slug)
+    if topic is not None or title is not None:
+        write_text(paths.user_brief, render_brief_markdown(title, topic or ""))
+
     for source_path in source_paths:
-        copy_user_source(source_path, paths.supporting_root)
+        copy_user_source(source_path, paths.user_raw_root)
 
-    assets = user_asset_files(paths.user_provided_root, exclude={paths.main_input})
-    parseable_supporting = [(path, parse_input(path)) for path in assets if path.suffix.lower() in SUPPORTED_INPUT_SUFFIXES]
-    if not topic and not assets:
-        raise ValueError(
-            f"No post brief or supporting files found for `{derived_slug}`. Add files under {paths.user_provided_root} or pass --topic."
+    if not enough_input_exists(derived_slug):
+        payload["status"] = "scaffolded"
+        payload["next_step"] = (
+            f"Add a brief to {paths.user_brief} or place source files under {paths.user_raw_root}, "
+            f"then run `autobloggy prepare-inputs --slug {derived_slug}`."
         )
+        return payload
 
-    derived_title = title or derive_title(topic, parseable_supporting, assets)
-    write_text(paths.main_input, render_input_markdown(derived_title, topic, paths.user_provided_root, assets, parseable_supporting))
-
-    main_input, input_content, _ = load_post_input_bundle(derived_slug)
+    prepared = prepare_post_inputs(derived_slug, require_sources=True)
+    input_path, input_content, _ = load_post_input_bundle(derived_slug)
     resolved_preset_name = preset_name or default_preset_name(paths.root)
-    strategy_text = generate_strategy(derived_slug, input_content, main_input, paths.user_provided_root, resolved_preset_name, paths.root)
+    strategy_text = generate_strategy(derived_slug, input_content, input_path, paths.prepared_root, resolved_preset_name, paths.root)
     write_text(paths.strategy, strategy_text)
 
     return {
         "slug": derived_slug,
         "preset": resolved_preset_name,
-        "input": str(paths.main_input),
+        "brief": str(paths.user_brief),
+        "manifest": prepared["manifest"],
+        "input": prepared["input"],
         "strategy": str(paths.strategy),
+        "status": "generated",
     }
 
 
@@ -564,7 +974,7 @@ def run_generate_outline(slug: str) -> dict[str, str]:
     if not paths.strategy.exists():
         raise FileNotFoundError(f"Strategy does not exist: {paths.strategy}")
 
-    main_input, input_content, _ = load_post_input_bundle(slug)
+    input_path, input_content, _ = load_post_input_bundle(slug)
     strategy_text = read_text(paths.strategy)
     frontmatter, _ = extract_frontmatter(strategy_text)
     if frontmatter.get("status") != "approved":
@@ -585,7 +995,7 @@ def run_generate_outline(slug: str) -> dict[str, str]:
     outline_text = generate_outline(strategy_text, input_content)
     write_text(paths.outline, outline_text)
     return {
-        "input": str(main_input),
+        "input": str(input_path),
         "outline": str(paths.outline),
     }
 

@@ -9,6 +9,7 @@ dependencies = [
   "PyYAML>=6.0.2",
   "python-pptx>=1.0.2",
   "py-readability-metrics>=1.4.5",
+  "quarto-cli>=1.5.57",
 ]
 
 [project.scripts]

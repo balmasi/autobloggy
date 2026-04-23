@@ -67,12 +67,55 @@ class PresetPaths(BaseModel):
     brand_guide: Path
 
 
+class InputTextSource(BaseModel):
+    path: str
+    kind: str
+    title: str = ""
+    headings: list[str] = Field(default_factory=list)
+    extracted_from: str | None = None
+
+
+class InputVisualSource(BaseModel):
+    id: str
+    path: str
+    kind: str
+    source_file: str
+    source_locator: str | None = None
+    width_px: int | None = None
+    height_px: int | None = None
+    caption: str = ""
+    description: str = ""
+    tags: list[str] = Field(default_factory=list)
+
+
+class InputManifest(BaseModel):
+    generated_at: str
+    brief: str | None = None
+    raw_text_sources: list[InputTextSource] = Field(default_factory=list)
+    extracted_text_sources: list[InputTextSource] = Field(default_factory=list)
+    raw_visual_sources: list[InputVisualSource] = Field(default_factory=list)
+    extracted_visual_sources: list[InputVisualSource] = Field(default_factory=list)
+    canonical_input: str = ""
+
+
 class PostPaths(BaseModel):
     slug: str
     root: Path
+    inputs_root: Path
     user_provided_root: Path
-    main_input: Path
-    supporting_root: Path
+    user_readme: Path
+    user_brief: Path
+    user_raw_root: Path
+    extracted_root: Path
+    extracted_text_root: Path
+    extracted_visual_root: Path
+    prepared_root: Path
+    prepared_input: Path
+    input_manifest: Path
+    visuals_root: Path
+    visuals_requests: Path
+    legacy_main_input: Path
+    legacy_supporting_root: Path
     discovery_root: Path
     discovery_summary: Path
     strategy: Path

@@ -14,9 +14,10 @@ This skill does not own kickoff, discovery, outline generation, strategy approva
 1. `program.md`
 2. `posts/<slug>/strategy.md`
 3. `posts/<slug>/outline.md`
-4. `posts/<slug>/inputs/user_provided/input.md` and any supporting files under `posts/<slug>/inputs/user_provided/supporting/`
-5. `posts/<slug>/inputs/discovery/discovery.md` if it exists
-6. The preset writing and brand guides named in the strategy frontmatter (`preset_writing_guide`, `preset_brand_guide`).
+4. `posts/<slug>/inputs/prepared/input.md`
+5. `posts/<slug>/inputs/prepared/input_manifest.yaml`
+6. `posts/<slug>/inputs/discovery/discovery.md` if it exists
+7. The preset writing and brand guides named in the strategy frontmatter (`preset_writing_guide`, `preset_brand_guide`).
 
 ## What to write
 
@@ -30,6 +31,7 @@ Rewrite the body of `posts/<slug>/draft.qmd` in place:
 - Do not invent facts, claims, examples, or numbers that are not supported by the strategy, outline, or input bundle.
 - No em dashes. No assistant or marketing boilerplate. No placeholder text such as "TBD" or "[REQUIRED:...]".
 - End with a closing section that gives the reader a concrete takeaway.
+- Respect the input boundary: treat `inputs/user_provided/` as human-owned, and do not write under `inputs/extracted/` or `inputs/prepared/`.
 
 ## Handing off to the attempt loop
 

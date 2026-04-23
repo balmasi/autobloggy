@@ -19,6 +19,7 @@ from .loop import (
 )
 from .prepare import (
     outline_approval_issues,
+    prepare_post_inputs,
     run_generate_draft,
     run_generate_outline,
     run_new_post,
@@ -29,6 +30,9 @@ from .scoring import is_strict_improvement
 from .tasks import choose_next_task
 from .utils import ensure_dir, now_iso, repo_root
 from .verifiers import write_verifier_bundle
+from .export import SUPPORTED_FORMATS, export_post
+from .visual_verifiers import write_visual_verifier_bundle
+from .visuals import embed_visuals, prepare_visual_requests
 
 
 def parse_args() -> argparse.Namespace:
@@ -39,11 +43,14 @@ def parse_args() -> argparse.Namespace:
     new_post.add_argument("--slug")
     new_post.add_argument("--title")
     new_post.add_argument("--topic")
-    new_post.add_argument("--source", action="append", default=[], help="File or folder to copy into inputs/user_provided/supporting/.")
+    new_post.add_argument("--source", action="append", default=[], help="File or folder to copy into inputs/user_provided/raw/.")
     new_post.add_argument("--preset", help="Preset name under presets/<name>. Defaults to config prepare.default_preset.")
 
     new_preset = subparsers.add_parser("new-preset")
     new_preset.add_argument("--name", required=True)
+
+    prepare_inputs = subparsers.add_parser("prepare-inputs")
+    prepare_inputs.add_argument("--slug", required=True)
 
     generate_outline = subparsers.add_parser("generate-outline")
     generate_outline.add_argument("--slug", required=True)
@@ -60,6 +67,22 @@ def parse_args() -> argparse.Namespace:
 
     approve_outline = subparsers.add_parser("approve-outline")
     approve_outline.add_argument("--slug", required=True)
+
+    prepare_visuals = subparsers.add_parser("prepare-visuals")
+    prepare_visuals.add_argument("--slug", required=True)
+
+    embed = subparsers.add_parser("embed-visuals")
+    embed.add_argument("--slug", required=True)
+    embed.add_argument("--visual-id", action="append", default=[])
+
+    verify_visuals = subparsers.add_parser("verify-visuals")
+    verify_visuals.add_argument("--slug", required=True)
+    verify_visuals.add_argument("--visual-id", action="append", default=[])
+    verify_visuals.add_argument("--attempt", default="001")
+
+    export_cmd = subparsers.add_parser("export")
+    export_cmd.add_argument("--slug", required=True)
+    export_cmd.add_argument("--format", required=True, choices=SUPPORTED_FORMATS)
 
     stage = subparsers.add_parser("stage-attempt")
     stage.add_argument("--slug", required=True)
@@ -110,6 +133,16 @@ def command_new_preset(args: argparse.Namespace) -> int:
     try:
         preset_root = scaffold_preset(args.name)
         print(f"preset\t{preset_root}")
+        return 0
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def command_prepare_inputs(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        generated = prepare_post_inputs(args.slug, require_sources=True)
+        print_generated(generated)
         return 0
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
@@ -179,6 +212,46 @@ def command_approve_outline(args: argparse.Namespace) -> int:
     write_text(paths.outline, format_markdown_with_frontmatter(frontmatter, body))
     print(f"outline\t{paths.outline}")
     return 0
+
+
+def command_prepare_visuals(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        generated = prepare_visual_requests(args.slug)
+        print_generated(generated)
+        return 0
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def command_embed_visuals(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        generated = embed_visuals(args.slug, selected_visual_ids=list(args.visual_id))
+        print_generated(generated)
+        return 0
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def command_verify_visuals(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        generated = write_visual_verifier_bundle(args.slug, selected_visual_ids=list(args.visual_id), attempt=args.attempt)
+        print_generated(generated)
+        return 0
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def command_export(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        generated = export_post(args.slug, args.format)
+        print_generated(generated)
+        return 0
+    except (ValueError, FileNotFoundError) as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def command_stage_attempt(args: argparse.Namespace) -> int:
@@ -285,11 +358,16 @@ def main() -> int:
     command_map = {
         "new-post": command_new_post,
         "new-preset": command_new_preset,
+        "prepare-inputs": command_prepare_inputs,
         "generate-outline": command_generate_outline,
         "generate-draft": command_generate_draft,
         "decide-discovery": command_decide_discovery,
         "approve-strategy": command_approve_strategy,
         "approve-outline": command_approve_outline,
+        "prepare-visuals": command_prepare_visuals,
+        "embed-visuals": command_embed_visuals,
+        "verify-visuals": command_verify_visuals,
+        "export": command_export,
         "stage-attempt": command_stage_attempt,
         "check": command_check,
         "verify": command_verify,

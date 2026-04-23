@@ -7,3 +7,4 @@ dist/
 build/
 posts/*/runs/
 
+.playwright-cli/
