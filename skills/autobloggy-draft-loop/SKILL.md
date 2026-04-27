@@ -35,8 +35,6 @@ If the iteration cap is hit before marker count reaches zero, stop and report th
 
 - Edit only `posts/<slug>/draft.html` (and only inside `<main>`).
 - Do not edit `strategy.md`, `outline.md`, `meta.yaml`, the preset files, or `program.md`.
-- Do not run `autobloggy export` from this skill — that is a separate user-driven step.
-- Use `autobloggy-copy-edit` only if the active fixes are pure prose tightening with no structural change.
 
 ## Do Not
 

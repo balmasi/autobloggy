@@ -3,10 +3,7 @@ from __future__ import annotations
 import re
 from typing import Callable
 
-import yaml
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
-
-from ..utils import repo_root
 
 
 CheckFn = Callable[[str], tuple[str, list[str]]]
@@ -44,20 +41,6 @@ def _make_marker(soup: BeautifulSoup, rule_id: str, rationale: str) -> Comment:
 def _insert_after(node: Tag | NavigableString, comment: Comment) -> None:
     node.insert_after(comment)
 
-
-def _insert_at_top_of_main(main: Tag, comment: Comment) -> None:
-    if main.contents:
-        main.insert(0, comment)
-        if not isinstance(main.contents[0], NavigableString):
-            main.insert(0, NavigableString("\n"))
-    else:
-        main.append(comment)
-
-
-def load_banned_patterns() -> list[str]:
-    path = repo_root() / "shared" / "banned_patterns.yaml"
-    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    return list(raw.get("patterns", []))
 
 
 @check
@@ -132,33 +115,3 @@ def image_caption_alt(html: str) -> tuple[str, list[str]]:
             inserted.append("image_caption_alt")
     return (_serialize(soup), inserted) if inserted else (html, [])
 
-
-@check
-def banned_patterns(html: str) -> tuple[str, list[str]]:
-    soup, main = _load_html(html)
-    if main is None:
-        return html, []
-    patterns = load_banned_patterns()
-    text_lower = main.get_text().lower()
-    hits = [p for p in patterns if p.lower() in text_lower]
-    if not hits:
-        return html, []
-    marker = _make_marker(
-        soup,
-        "banned_patterns",
-        f"banned word/phrase used: {', '.join(hits)} — replace with concrete language",
-    )
-    _insert_at_top_of_main(main, marker)
-    return _serialize(soup), ["banned_patterns"]
-
-
-@check
-def em_dash_scan(html: str) -> tuple[str, list[str]]:
-    soup, main = _load_html(html)
-    if main is None:
-        return html, []
-    if "—" not in main.get_text():
-        return html, []
-    marker = _make_marker(soup, "em_dash_scan", "em dash (—) found; rewrite without it")
-    _insert_at_top_of_main(main, marker)
-    return _serialize(soup), ["em_dash_scan"]

@@ -120,20 +120,4 @@ def test_verify_inserts_programmatic_markers(fresh_repo: Path) -> None:
     # marker_count printed even if Playwright not available
     assert "marker_count" in result
     rewritten = draft_path.read_text(encoding="utf-8")
-    assert "fb[banned_patterns]" in rewritten or "fb[em_dash_scan]" in rewritten
-
-
-def test_export_copies_draft(fresh_repo: Path) -> None:
-    repo = fresh_repo
-    slug = "export-smoke"
-    run_cli(repo, "new-post", "--slug", slug, "--topic", "Export smoke")
-    run_cli(repo, "generate-strategy", "--slug", slug)
-    _seed_strategy(repo / "posts" / slug / "strategy.md")
-    run_cli(repo, "decide-discovery", "--slug", slug, "--decision", "no")
-    run_cli(repo, "generate-outline", "--slug", slug)
-    _replace_outline(repo / "posts" / slug / "outline.md")
-    run_cli(repo, "approve-outline", "--slug", slug)
-    run_cli(repo, "generate-draft", "--slug", slug)
-    run_cli(repo, "export", "--slug", slug)
-    exported = repo / "posts" / slug / "export" / "html" / "draft.html"
-    assert exported.exists()
+    assert "fb[one_h1]" in rewritten

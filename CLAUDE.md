@@ -26,7 +26,6 @@ uv run autobloggy generate-outline --slug my-post
 uv run autobloggy approve-outline --slug my-post
 uv run autobloggy generate-draft --slug my-post
 uv run autobloggy verify --slug my-post
-uv run autobloggy export --slug my-post
 ```
 
 ## File Layout
@@ -42,7 +41,6 @@ uv run autobloggy export --slug my-post
 | `prompts/verifier_rubrics.md` | Single source of truth for what "good" looks like; shipped to writer and verifier |
 | `config.yaml` | Repo-level config including `prepare.default_preset` |
 | `skills/` | Source skill definitions |
-| `shared/` | Shared deterministic checks |
 
 ## Core Modules
 
@@ -109,5 +107,5 @@ When evaluating a change, weigh the complexity cost against the improvement magn
 - `posts/<slug>/inputs/prepared/` is a deterministic output only.
 - `posts/<slug>/meta.yaml` is the only home for pipeline state (status, preset, discovery decision, timestamps).
 - `strategy.md` is the post-specific source of truth once the human signs off.
-- Only `posts/<slug>/draft.html` (inside `<main>`) is editable during the verify loop.
+- Only `posts/<slug>/draft.html` (inside `<main>`) is editable during the verify loop and final unslop pass.
 - Verifier feedback flows through `<!-- fb[rule_id]: rationale -->` HTML comments inside `<main>`. Empty-check is `grep -c '<!-- fb\[' draft.html` returning `0`.

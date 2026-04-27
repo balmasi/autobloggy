@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -13,9 +15,8 @@ def test_program_md_describes_new_pipeline(repo_root: Path) -> None:
     assert "Use skill `autobloggy-first-draft`" in program
     assert "Use skill `autobloggy-draft-loop`" in program
     assert "`autobloggy verify --slug <slug>`" in program
-    assert "`autobloggy export --slug <slug>`" in program
+    assert "Use skill `slop-mop` as the final workflow step" in program
     assert "Outline headings must already be publishable, reader-facing section titles" in program
-    assert "Use skill `autobloggy-copy-edit` only when the active fix-pass batch is narrow prose tightening" in program
 
 
 def test_skill_inventory(repo_root: Path) -> None:
@@ -26,10 +27,12 @@ def test_skill_inventory(repo_root: Path) -> None:
         "autobloggy-draft-loop",
         "autobloggy-verifier",
         "autobloggy-discovery",
-        "autobloggy-copy-edit",
+        "slop-mop",
         "autobloggy-transcribe",
     ):
         assert (skills / name / "SKILL.md").exists(), f"missing {name}"
+    assert (skills / "slop-mop" / "scripts" / "detect_slop.py").exists()
+    assert (skills / "slop-mop" / "references" / "prose-patterns.md").exists()
     assert not (skills / "autobloggy-visual-verifier").exists()
     assert not (skills / "autobloggy-visuals").exists()
 
@@ -48,3 +51,15 @@ def test_verifier_rubrics_exists(repo_root: Path) -> None:
     text = rubrics.read_text(encoding="utf-8")
     for rule in ("voice", "overstatement", "needs_visual", "layout_integrity", "presentable_headings"):
         assert rule in text
+
+
+def test_slop_mop_detector_runs(repo_root: Path) -> None:
+    script = repo_root / "skills" / "slop-mop" / "tests" / "run_tests.py"
+    result = subprocess.run(
+        [sys.executable, str(script)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0
+    assert "ok test_sloppy_markdown" in result.stdout

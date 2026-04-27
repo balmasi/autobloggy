@@ -14,12 +14,13 @@ This skill owns the one allowed direct edit of `posts/<slug>/draft.html` before 
 
 1. `program.md`
 2. `prompts/verifier_rubrics.md` — your output will be evaluated against these. Satisfy them in v0.
-3. `posts/<slug>/strategy.md`
-4. `posts/<slug>/outline.md`
-5. `posts/<slug>/inputs/prepared/input.md` and `posts/<slug>/inputs/prepared/input_manifest.yaml`
-6. `posts/<slug>/inputs/discovery/discovery.md` if it exists
-7. The active preset's `writing_guide.md` and `brand_guide.md` (preset name is in `posts/<slug>/meta.yaml`).
-8. `posts/<slug>/draft.html` — the scaffolded HTML doc with empty `<main>`.
+3. `skills/slop-mop/SKILL.md` — apply its prevention rules while writing public-facing prose.
+4. `posts/<slug>/strategy.md`
+5. `posts/<slug>/outline.md`
+6. `posts/<slug>/inputs/prepared/input.md` and `posts/<slug>/inputs/prepared/input_manifest.yaml`
+7. `posts/<slug>/inputs/discovery/discovery.md` if it exists
+8. The active preset's `writing_guide.md` and `brand_guide.md` (preset name is in `posts/<slug>/meta.yaml`).
+9. `posts/<slug>/draft.html` — the scaffolded HTML doc with empty `<main>`.
 
 ## What to write
 
@@ -34,7 +35,7 @@ Edit `posts/<slug>/draft.html` in place. **Only edit inside `<main>`** (and `<ti
 - Update `<title>` and `<meta name="description">` in `<head>` to match the post.
 - Do not invent facts, claims, or numbers not supported by the strategy, outline, or input bundle.
 - Do not insert `<!-- fb[...] -->` markers. Those are inserted by the verifier in the next phase.
-- No em dashes. No assistant or marketing boilerplate. No placeholder text.
+- No em dashes. No assistant, marketing, or AI-slop boilerplate. No placeholder text.
 
 ## Visual authoring rules
 

@@ -80,7 +80,7 @@ These are the load-bearing decisions, with rationale. Each was actively grilled 
 
 ### D4. HTML is the working format end to end
 
-**Decision:** No markdown, no pandoc, no mistune, no Quarto. The agent authors and edits `draft.html` directly. Visuals are inline — the right tool for the job: `<svg>` for diagrams and callouts, a lightweight JS library via CDN (Observable Plot / Chart.js / ECharts / D3 on `cdn.jsdelivr.net` / `unpkg.com` / `cdnjs.cloudflare.com`) for real data visualization, `<img>` for source assets. Verify opens the file in Playwright and screenshots it. Export is `cp draft.html export/html/`. PDF/DOCX are out of CLI scope — handled ad hoc by skills (Playwright `page.pdf()`, pandoc shell-out, etc.) when needed. Programmatic checks parse the DOM via BeautifulSoup.
+**Decision:** No markdown, no pandoc, no mistune, no Quarto. The agent authors and edits `draft.html` directly. Visuals are inline — the right tool for the job: `<svg>` for diagrams and callouts, a lightweight JS library via CDN (Observable Plot / Chart.js / ECharts / D3 on `cdn.jsdelivr.net` / `unpkg.com` / `cdnjs.cloudflare.com`) for real data visualization, `<img>` for source assets. Verify opens the file in Playwright and screenshots it. Programmatic checks parse the DOM via BeautifulSoup.
 
 **Why:** Markdown was a translation layer that bought nothing — text models read markdown OR HTML fine, the publishable artifact is HTML, and rendering during verify costs nothing if the working file is already HTML. Pandoc/mistune both leave the dependency surface; killing that step removes external system deps from the hot path.
 
@@ -105,10 +105,6 @@ These are the load-bearing decisions, with rationale. Each was actively grilled 
 CHECKS = []
 def check(fn): CHECKS.append(fn); return fn
 
-@check
-def banned_patterns(html: str) -> str: ...
-@check
-def em_dash_scan(html: str) -> str: ...
 ```
 
 **Why:** The protocol existed to support uniform iteration in a `run_all_verifiers` aggregator that fed `is_strict_improvement` scoring. Both are gone. Verifiers no longer share an interface beyond `(html) -> html with markers inserted`. Forcing a Protocol pays nothing.
@@ -172,7 +168,6 @@ The pipeline collapses to a small command set:
 | `autobloggy approve-outline --slug <…>` | Agent (after human approval) | Patch `meta.yaml` with status=approved |
 | `autobloggy generate-draft --slug <…>` | Agent | Outline + strategy + writing guide + brand guide + verifier rubrics + preset template.html → `draft.html` (with visuals inline) |
 | `autobloggy verify --slug <…>` | Agent (each loop iteration) | Strip markers, run programmatic checks, render via Playwright, screenshot at viewport widths, write `verify-pack.md` |
-| `autobloggy export --slug <…> [--format html]` | Agent | Copy `draft.html` to `export/html/`. PDF/DOCX out of scope. |
 | `autobloggy new-preset --name <…>` | Agent | Scaffold `presets/<name>/` |
 
 **Deleted commands:** `prepare-visuals`, `embed-visuals`, `verify-visuals`, `stage-attempt`, `check`, `evaluate`, `approve-strategy`.
@@ -238,7 +233,6 @@ presets/<name>/
 | `visual_verifiers.py` | Delete | Whole concept gone |
 | `visual_checks.py` | Delete or fold | If any rules survive (e.g., banned-CDN hosts), fold into `verifiers/programmatic.py`. Most don't survive because visuals are inline. |
 | `visuals.py` | Delete | Entire module gone. |
-| `export.py` | Trivial rewrite | Just `cp draft.html export/html/` (or alongside its assets). Delete Quarto integration, iframe rewrite, rasterize, etc. |
 | `artifacts.py` | Update | New `meta.yaml` reader/writer; drop frontmatter helpers from strategy/outline (those are now in meta.yaml). |
 | `pyproject.toml` | Update | Removed `quarto-cli`, `python-pptx`, `py-readability-metrics`. Added `beautifulsoup4`, `playwright`. |
 
@@ -253,10 +247,10 @@ presets/<name>/
 | `autobloggy-first-draft` | Refactor | Now produces `draft.html` directly, populating `<main>` of the preset template, with inline visuals from v0. Authors visuals using right-tool-for-job: svg for diagrams, lightweight JS lib for data viz. |
 | `autobloggy-draft-loop` | Slim down | Drives the two-pass loop. Iteration cap from human. Dispatches `autobloggy-verifier` sub-agent each cycle, then does the fix pass (prose + inline visual edits together), then re-runs verify. |
 | `autobloggy-verifier` (new) | New | Fresh-context sub-agent. Inputs: verify-pack.md, screenshots, draft.html. Output: insert markers via Edit tool, return. Never edits prose or visuals. |
+| `slop-mop` | New | Generic final unslop pass and drafting-time prevention rules for public-facing prose. Owns its detector under `skills/slop-mop/scripts/`. |
 | `autobloggy-visuals` | **Deleted** | Not refactored — deleted entirely. The fix pass and first-draft agent author/edit visuals inline directly. No sub-agent dispatch for visuals. |
 | `autobloggy-visual-verifier` | Delete | Whole concept folded into `autobloggy-verifier` |
 | `autobloggy-claim-verifier` | Delete | Deleted. |
-| `autobloggy-copy-edit` | Unchanged | Still useful as a focused prose-tightening tool |
 | `autobloggy-transcribe` | Unchanged | Local transcription for input prep |
 
 ---
@@ -370,8 +364,6 @@ The user-specified maximum number of iterations is communicated to the `autoblog
 | `code_fences_tagged` | Yes | `soup.select("pre code:not([class])")` |
 | `latex_balance` | Reassess | If still relevant in HTML, scan text content. Probably drop. |
 | `image_caption_alt` | Yes | `soup.select("main img:not([alt])")` and `<figure>` lacking `<figcaption>` |
-| `banned_patterns` | Yes | Substring search over `soup.select_one("main").get_text()` |
-| `em_dash_scan` | Yes | "—" in `get_text()` |
 | `readability_penalty` | Reassess | Was Flesch-Kincaid grade level. If kept, run on `get_text()`. May not be worth it given LLM voice rubric. |
 
 The `@check` decorator pattern (D6) makes adding/removing checks one-line changes.
@@ -416,11 +408,11 @@ A fresh agent picking this up should sequence the work to keep main branch green
 3. ✅ `autobloggy-verifier` skill (new) + slimmed `autobloggy-draft-loop`.
 4. ✅ `generate-draft` produces `draft.html` from template; `autobloggy-first-draft` updated for HTML + inline visuals.
 5. ✅ `autobloggy-visuals` **deleted** (not refactored — see as-built delta).
-6. ✅ `export` is `cp draft.html export/html/`.
+6. ✅ Removed the old export command.
 7. ✅ Metadata in `meta.yaml`; `approve-outline` and `decide-discovery` patch it.
 8. ✅ Deleted: `loop.py`, `scoring.py`, `tasks.py`, `checks.py`, `verifiers.py` (old), `visual_verifiers.py`, `visual_checks.py`, `visuals.py`, `autobloggy-visual-verifier`, `autobloggy-visuals`, old CLI commands.
 9. ✅ `program.md`, `CLAUDE.md`, `README.md` rewritten.
-10. ✅ Tests: unit tests for all programmatic checks; integration tests for full pipeline through draft + verify + export.
+10. ✅ Tests: unit tests for all programmatic checks; integration tests for full pipeline through draft + verify.
 
 ---
 

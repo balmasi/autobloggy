@@ -35,7 +35,7 @@ If you only want a piece of it:
     - dispatch the `autobloggy-verifier` sub-agent on the pack to insert LLM-judged markers
     - fix every `<!-- fb[rule_id]: rationale -->` marker — the same fix pass authors / edits inline visuals when `fb[needs_visual]` or visual rule markers are present
     - re-run until `marker_count == 0`
-12. `uv run autobloggy export --slug <slug>` copies the final draft to `posts/<slug>/export/html/`
+12. Use skill `slop-mop` as the final unslop pass.
 
 ## Commands
 
@@ -48,7 +48,6 @@ If you only want a piece of it:
 - `approve-outline`: flips `meta.yaml` `status` to `outline_approved` once the outline has publishable headings
 - `generate-draft`: materializes `draft.html` from the active preset's `template.html`
 - `verify`: strips existing `<!-- fb[...] -->` markers from `draft.html`, runs programmatic checks (inserting markers), captures full-page screenshots at 360/768/1280, and writes `.verify/verify-pack.md` for the verifier sub-agent
-- `export`: copies `draft.html` to `posts/<slug>/export/html/`
 
 ## Core Concepts
 
@@ -71,6 +70,5 @@ If you only want a piece of it:
 - `presets/`: reusable preset packs
 - `prompts/`: shared prompts including the verifier rubrics
 - `skills/`: source skill definitions; edit these, not generated agent copies
-- `shared/`: shared check config (banned phrasing)
 - `scripts/`: install and ops helpers
 - `posts/<slug>/`: committed per-post state (gitignored by default)

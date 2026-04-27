@@ -58,4 +58,3 @@ class PostPaths(BaseModel):
     draft: Path
     verify_root: Path
     verify_pack: Path
-    export_html_root: Path

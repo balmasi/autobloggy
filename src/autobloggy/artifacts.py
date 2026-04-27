@@ -37,7 +37,6 @@ def post_paths(slug: str, root: Path | None = None) -> PostPaths:
         draft=post_root / "draft.html",
         verify_root=verify_root,
         verify_pack=verify_root / "verify-pack.md",
-        export_html_root=post_root / "export" / "html",
     )
 
 

@@ -1,7 +1,0 @@
-interface:
-  display_name: "Autobloggy Copy Edit"
-  short_description: "Improve draft clarity without adding hype"
-  default_prompt: "Use $autobloggy-copy-edit to tighten this Autobloggy draft without changing its thesis."
-
-policy:
-  allow_implicit_invocation: true

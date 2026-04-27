@@ -20,8 +20,6 @@
   - `autobloggy generate-strategy`
   - `autobloggy generate-outline`
   - `autobloggy generate-draft`
-- After the verify loop converges, the agent may render exportable output only through:
-  - `autobloggy export`
 - `new-post` owns the default input home: `posts/<slug>/inputs/user_provided/`.
 - Human-owned inputs live only under:
   - `posts/<slug>/inputs/user_provided/brief.md`
@@ -32,7 +30,7 @@
 - After `generate-draft` has produced the HTML scaffold, the agent may edit `posts/<slug>/draft.html` once via skill `autobloggy-first-draft` to produce a real first draft (prose AND inline visuals together). After that edit, only the verify loop edits `draft.html`, and only inside `<main>`.
 - During the verify loop, the agent may edit only `posts/<slug>/draft.html` (inside `<main>`).
 - Pipeline state lives in `posts/<slug>/meta.yaml`. CLI commands flip status fields there; the agent does not edit it directly.
-- `program.md`, `config.yaml`, everything under `presets/`, and everything under `shared/` are read-only during a run.
+- `program.md`, `config.yaml`, and everything under `presets/` are read-only during a run.
 - Do not edit `posts/<slug>/strategy.md` or `outline.md` once the verify loop has started.
 
 ## Workflow
@@ -79,20 +77,16 @@ Agent action: Run `autobloggy generate-draft --slug <slug>` to materialize `post
 
 11. Write the first draft (prose + inline visuals).
 Owner: Agent.
-Agent action: Use skill `autobloggy-first-draft`. Edit `<main>` of `posts/<slug>/draft.html` directly using the approved strategy, outline, prepared input bundle, preset writing/brand guides, and `prompts/verifier_rubrics.md`. Author inline visuals (`<svg>`, `<canvas>`, `<img>`) inside `<main>` as part of v0.
+Agent action: Use skill `autobloggy-first-draft`, with `slop-mop` prevention rules active for public-facing prose. Edit `<main>` of `posts/<slug>/draft.html` directly using the approved strategy, outline, prepared input bundle, preset writing/brand guides, and `prompts/verifier_rubrics.md`. Author inline visuals (`<svg>`, `<canvas>`, `<img>`) inside `<main>` as part of v0.
 
 12. Run the verify loop.
 Owner: Agent within the user-specified iteration cap.
 Agent action: Use skill `autobloggy-draft-loop`. Each cycle: `autobloggy verify --slug <slug>` (programmatic markers + screenshots + verify-pack), then dispatch the `autobloggy-verifier` sub-agent (fresh context) to insert LLM-judged markers, then surgically fix every marker. The fix pass owns prose AND inline visual edits — `<!-- fb[needs_visual]: hint -->` markers are resolved by authoring the visual inline (`<svg>`, `<canvas>`, `<figure>`+`<img>`) using the brand tokens already declared in the draft's `<head>`. Visual feedback markers on existing visuals are resolved by editing the visual in place. Stop when marker count is zero and a fresh verify run inserts no new markers, or when the user-specified iteration cap is hit.
 
-13. Tighten prose when the active task is purely editorial.
-Owner: Agent.
-Agent action: Use skill `autobloggy-copy-edit` only when the active fix-pass batch is narrow prose tightening with no structural change.
-
-14. Prepare local transcripts when the source material needs it.
+13. Prepare local transcripts when the source material needs it.
 Owner: Agent.
 Agent action: Use skill `autobloggy-transcribe` only for local transcription input prep.
 
-15. Export the post for review or publication.
-Owner: Agent on request.
-Agent action: Run `autobloggy export --slug <slug>` to copy the final `draft.html` to `posts/<slug>/export/html/`. PDF/DOCX are out of CLI scope.
+14. Unslop the final draft.
+Owner: Agent.
+Agent action: Use skill `slop-mop` as the final workflow step after the verify loop. Run its detector against `posts/<slug>/draft.html`, then edit only `posts/<slug>/draft.html` inside `<main>` (plus title/meta description only if needed) to remove AI-sounding filler, formulaic structures, and generic business language. Repeat the skill's detect/fix pass until the detector is clean or the operator asks to stop.

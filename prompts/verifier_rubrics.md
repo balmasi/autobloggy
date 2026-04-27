@@ -33,8 +33,6 @@ These already arrive in the draft when the verifier reads it. Do not re-mark the
 | `heading_order` | Heading level jumps by more than one (e.g. H2 → H4). |
 | `code_fences_tagged` | `<pre><code>` blocks missing a `language-*` class. |
 | `image_caption_alt` | `<img>` missing meaningful `alt`, or `<figure>` missing `<figcaption>`. |
-| `banned_patterns` | Any word from `shared/banned_patterns.yaml` appears in `<main>` text. |
-| `em_dash_scan` | An em dash (`—`) appears anywhere in `<main>`. |
 
 ---
 

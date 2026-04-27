@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from autobloggy.verifiers import marker_count, run_programmatic, strip_markers
 from autobloggy.verifiers.programmatic import (
-    banned_patterns,
     code_fences_tagged,
-    em_dash_scan,
     heading_order,
     image_caption_alt,
     one_h1,
@@ -70,28 +68,11 @@ def test_image_caption_alt_flags_figure_without_caption(repo_root, monkeypatch) 
     assert "image_caption_alt" in inserted
 
 
-def test_banned_patterns_flags_word(repo_root, monkeypatch) -> None:
-    monkeypatch.chdir(repo_root)
-    html = _wrap("<p>This framework is revolutionary.</p>")
-    out, inserted = banned_patterns(html)
-    assert inserted == ["banned_patterns"]
-    assert "fb[banned_patterns]" in out
-
-
-def test_em_dash_scan_flags_dash(repo_root, monkeypatch) -> None:
-    monkeypatch.chdir(repo_root)
-    html = _wrap("<p>This is a sentence — with an em dash.</p>")
-    out, inserted = em_dash_scan(html)
-    assert inserted == ["em_dash_scan"]
-    assert "fb[em_dash_scan]" in out
-
-
 def test_run_programmatic_chains_checks(repo_root, monkeypatch) -> None:
     monkeypatch.chdir(repo_root)
-    html = _wrap("<h1>One</h1><h1>Two</h1><p>seamless flow — go.</p>")
+    html = _wrap('<h1>One</h1><h1>Two</h1><figure><img src="x.png"></figure>')
     out, inserted = run_programmatic(html)
     rule_ids = set(inserted)
     assert "one_h1" in rule_ids
-    assert "banned_patterns" in rule_ids
-    assert "em_dash_scan" in rule_ids
+    assert "image_caption_alt" in rule_ids
     assert marker_count(out) >= 3

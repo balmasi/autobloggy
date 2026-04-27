@@ -3,8 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from .artifacts import patch_meta, post_paths, read_meta
-from .export import SUPPORTED_FORMATS, export_post
+from .artifacts import patch_meta, post_paths
 from .prepare import (
     outline_approval_issues,
     prepare_post_inputs,
@@ -53,10 +52,6 @@ def parse_args() -> argparse.Namespace:
 
     verify = subparsers.add_parser("verify")
     verify.add_argument("--slug", required=True)
-
-    export_cmd = subparsers.add_parser("export")
-    export_cmd.add_argument("--slug", required=True)
-    export_cmd.add_argument("--format", default="html", choices=SUPPORTED_FORMATS)
 
     return parser.parse_args()
 
@@ -164,15 +159,6 @@ def cmd_verify(args: argparse.Namespace) -> int:
         raise SystemExit(str(exc)) from exc
 
 
-def cmd_export(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        print_kv(export_post(args.slug, args.format))
-        return 0
-    except (ValueError, FileNotFoundError) as exc:
-        raise SystemExit(str(exc)) from exc
-
-
 def main() -> int:
     args = parse_args()
     commands = {
@@ -185,7 +171,6 @@ def main() -> int:
         "approve-outline": cmd_approve_outline,
         "generate-draft": cmd_generate_draft,
         "verify": cmd_verify,
-        "export": cmd_export,
     }
     return commands[args.command](args)
 
