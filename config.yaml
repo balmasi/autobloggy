@@ -2,43 +2,8 @@ prepare:
   default_preset: default
   presets_dir: presets
 
-readability:
-  target_flesch_kincaid_grade_level: 10
-  allowed_grade_level_deviation: 1
-checks:
-  banned_patterns_file: shared/banned_patterns.yaml
-  must_have_verifiers:
-    - opening_clarity
-    - paragraph_focus
-    - voice
-    - overstatement
-    - portfolio_company_disclosure
-    - research_citation
-    - performance_metrics_disclosure
-  improvement_verifiers:
-    - specificity
-    - so_what
-    - filler_hype
-visual_checks:
-  must_have_verifiers:
-    - visual_relevance
-    - text_visual_alignment
-    - source_attribution
-    - layout_integrity
-  improvement_verifiers:
-    - brand_consistency
-    - composition_clarity
-  verifier_viewport_widths:
+verify:
+  viewport_widths:
     - 360
-    - 820
-  allowed_script_src_hosts:
-    - cdn.jsdelivr.net
-    - unpkg.com
-    - cdnjs.cloudflare.com
-loop:
-  max_iterations: 25
-  time_budget_minutes: 180
-  task_priority:
-    - deterministic_blockers
-    - must_have_verifiers
-    - hillclimb
+    - 768
+    - 1280

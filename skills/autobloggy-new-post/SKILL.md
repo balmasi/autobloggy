@@ -27,17 +27,17 @@ Read `references/kickoff-reference.md` before you interview the user or approve 
 6. If the user already has source files, use `posts/<slug>/inputs/user_provided/raw/` as the default home for them.
 7. Conversational kickoff briefs belong only in `posts/<slug>/inputs/user_provided/brief.md`.
 8. If the user passes file paths directly, let `autobloggy new-post` copy them into `inputs/user_provided/raw/`.
-9. Never write generated files under `inputs/user_provided/`. Deterministic extracts and the canonical bundle belong under `inputs/extracted/` and `inputs/prepared/`.
+9. Never write generated files under `inputs/user_provided/`. The canonical bundle belongs under `inputs/prepared/`.
 10. Never infer the intended source from active files, open tabs, tests, or example posts.
 
 ## Execution
 
-11. Run `autobloggy new-post`.
+11. Run `autobloggy new-post`. This scaffolds the input layout and writes `posts/<slug>/meta.yaml`.
 12. If the repo now has raw files or a substantive brief but no prepared input bundle, run `autobloggy prepare-inputs --slug <slug>`.
-13. Read the generated `strategy.md` plus the active preset files.
-14. Ask only the follow-up strategy questions needed to resolve the required fields from `references/kickoff-reference.md`.
-15. Help edit `strategy.md` until the required sections are concrete and every unresolved marker is cleared.
-16. Do not approve the strategy while any required marker or unchecked approval item remains.
+13. Run `autobloggy generate-strategy --slug <slug>` to produce the templated `strategy.md` from the active preset.
+14. Read the generated `strategy.md` plus the active preset files.
+15. Ask only the follow-up strategy questions needed to resolve the required fields from `references/kickoff-reference.md`.
+16. Help edit `strategy.md` until the required sections are concrete and every unresolved marker is cleared. There is no `approve-strategy` CLI gate — human review is the gate. Move on to discovery / outline once the user is satisfied.
 
 ## Do Not
 

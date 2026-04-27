@@ -31,7 +31,6 @@ Write like a sharp practitioner explaining a hard-earned lesson to other capable
 ## Style Guardrails
 
 [REQUIRED: edit these guardrails until they match the user's expectations for the piece.]
-- Use short to medium sentences.
 - Lead with the real problem or mistaken assumption.
 - Explain through mechanisms, tradeoffs, and consequences.
 - Keep abstractions tied to implementation, decisions, or outcomes.

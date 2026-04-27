@@ -4,47 +4,42 @@
     "autobloggy-copy-edit": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "982f566a325c36f09de0446512c42023805a3487aac04c4c981a734c949bc48a"
+      "computedHash": "5129d881e96313aa2e87a2aed653077a6af384deb3217d92e3ce48ae3d9e9a46"
     },
     "autobloggy-discovery": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "e12a36915109b8e0355785347cf473042f93eaeac35b8b30527142bb2d59cb0f"
+      "computedHash": "03e983cf52d95416d9e9e7d926b7173e6113a50614d05ac1984dcc0f53b4543c"
     },
     "autobloggy-draft-loop": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "6d1fbe164de0e32e67f66fcfc001240014d15b0088b37be08fdb7b2e7823c611"
+      "computedHash": "f54ba4d350ebd20b70999be7e10411d1250213afed8cbcccb67bf00591296314"
     },
     "autobloggy-first-draft": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "63d1a4aa1ce43414037af1a6b568fb61af8b6c229380b3c0ed3e43bc3d0a6416"
+      "computedHash": "1402c00f9ea9a1f6ad9fda824db8a90a4fdf68305e90d23f132dbfc2a5dbc455"
     },
     "autobloggy-new-post": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "a1d00f0435d1eba6209d5a12b68c1f0fe059c76ae173ed929eddc36fdcc456c2"
+      "computedHash": "ac5577c2cfcdef2153aea84e1111498dabfd17c6ecd678b450ed32f6fae9d549"
     },
     "autobloggy-transcribe": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
       "computedHash": "e9658168c4c2d3baafd4d0e10caca499f086845678844f54637747b685c6a41e"
     },
-    "autobloggy-visual-verifier": {
-      "source": "/Users/balmasi/Projects/autobloggy/skills",
-      "sourceType": "local",
-      "computedHash": "02625d4a00998dc38bf7fb19bd8842ee1ac5b0829ddaaacd92caaab16904ddc6"
-    },
-    "autobloggy-visuals": {
-      "source": "/Users/balmasi/Projects/autobloggy/skills",
-      "sourceType": "local",
-      "computedHash": "b06acae49f00e37066d6e45c2d6a254b10275e13f51742340349107dd5cd1ece"
-    },
     "ffmpeg-analyse-video": {
       "source": "fabriqaai/ffmpeg-analyse-video-skill",
       "sourceType": "github",
       "computedHash": "333beca6cb64c984990076e05dd9d040cbef262c3f1232ecf17355d06ccf75ef"
+    },
+    "grill-me": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "784f0dbb7403b0f00324bce9a112f715342777a0daee7bbb7385f9c6f0a170ea"
     }
   }
 }

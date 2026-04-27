@@ -1,6 +1,7 @@
 ---
 name: autobloggy-discovery
 description: Competitive discovery sweep for an Autobloggy post. Spawns parallel research sub-agents to find top existing content, then synthesizes findings into discovery.md to inform the outline.
+context: fork
 ---
 
 # Autobloggy Discovery
@@ -44,7 +45,7 @@ Before running, you must have:
    - `{output_path}` - `posts/<slug>/inputs/discovery/<n>-<angle>.md`
 4. Wait for all sub-agents to complete. Partial results are acceptable - use whatever was written.
 5. Read all files written to `posts/<slug>/inputs/discovery/`. Count the total sources found across all files.
-6. Synthesize into `posts/<slug>/inputs/discovery/discovery.md`.
+6. Synthesize into `posts/<slug>/inputs/discovery/discovery.md`. Every claim, statistic, or insight in the synthesis **must** carry an inline markdown link: `[Author/Publication](URL)`. The Sources section at the bottom must list each source as a markdown hyperlink. No bare source names — if a URL is missing, omit the claim.
 7. Report back with the strongest differentiating angles for the outline.
 
 ## Sub-agent Brief
@@ -73,6 +74,7 @@ You are a research agent with one job: find substantive existing content on a gi
 
 ## Output
 
-Write a Markdown file to this exact path:
-{output_path}
+Write a Markdown file to this exact path: {output_path}
+
+For each source, start with `**URL:** <full URL>` immediately after the source heading — this is required so the synthesis step can inline links. Every insight or claim must be attributable to a specific URL you actually fetched.
 ```

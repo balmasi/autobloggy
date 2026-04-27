@@ -1,6 +1,6 @@
 ---
 name: autobloggy-copy-edit
-description: Tighten Autobloggy draft prose without changing the post thesis. Use when improving `draft.qmd` for clarity, specificity, reader value, anti-hype, and anti-AI-cleanup while respecting the repo's style rules.
+description: Tighten Autobloggy draft prose without changing the post thesis. Use when improving `draft.html` for clarity, specificity, reader value, anti-hype, and anti-AI-cleanup while respecting the repo's style rules.
 ---
 
 # Autobloggy Copy Edit
@@ -18,11 +18,11 @@ Use this skill only for late-stage draft improvement after the structure is alre
 
 ## Workflow
 
-1. Read `program.md`, the current `strategy.md`, and the current `draft.qmd`.
-2. If the strategy frontmatter records preset files, read the active preset's `writing_guide.md` and `brand_guide.md` before editing.
+1. Read `program.md`, the current `strategy.md`, and the current `draft.html` (edit only inside `<main>`).
+2. Read the active preset's `writing_guide.md` and `brand_guide.md` (preset name is in `posts/<slug>/meta.yaml`).
 3. Treat the preset guides and strategy as read-only context. The draft is the only editable artifact in the loop.
 4. Identify the smallest scope that improves the active task.
-5. Edit only `draft.qmd`.
+5. Edit only `posts/<slug>/draft.html`, inside `<main>`. Never insert `<!-- fb[...] -->` markers — those are owned by the verifier.
 
 ## Anti-AI Cleanup
 
@@ -35,4 +35,4 @@ Use this skill only for late-stage draft improvement after the structure is alre
 
 - Change the thesis of the post.
 - Add new unsupported assertions.
-- Edit `program.md`, preset files, `strategy.md`, or `outline.md`.
+- Edit `program.md`, preset files, `strategy.md`, `outline.md`, or `meta.yaml`.

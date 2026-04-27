@@ -1,38 +1,21 @@
 from __future__ import annotations
 
 import argparse
-import shutil
 from pathlib import Path
 
-from .artifacts import extract_frontmatter, format_markdown_with_frontmatter, post_paths, read_json, read_text, write_json, write_text
-from .checks import run_checks
-from .loop import (
-    append_results,
-    create_attempt,
-    create_run,
-    ensure_results_tsv,
-    load_state,
-    save_state,
-    stage_prompt_pack,
-    summarize_attempt,
-    write_diff,
-)
+from .artifacts import patch_meta, post_paths, read_meta
+from .export import SUPPORTED_FORMATS, export_post
 from .prepare import (
     outline_approval_issues,
     prepare_post_inputs,
     run_generate_draft,
     run_generate_outline,
+    run_generate_strategy,
     run_new_post,
     scaffold_preset,
-    strategy_approval_issues,
 )
-from .scoring import is_strict_improvement
-from .tasks import choose_next_task
-from .utils import ensure_dir, now_iso, repo_root
-from .verifiers import write_verifier_bundle
-from .export import SUPPORTED_FORMATS, export_post
-from .visual_verifiers import write_visual_verifier_bundle
-from .visuals import embed_visuals, prepare_visual_requests
+from .utils import now_iso, repo_root
+from .verify import run_verify
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,8 +26,8 @@ def parse_args() -> argparse.Namespace:
     new_post.add_argument("--slug")
     new_post.add_argument("--title")
     new_post.add_argument("--topic")
-    new_post.add_argument("--source", action="append", default=[], help="File or folder to copy into inputs/user_provided/raw/.")
-    new_post.add_argument("--preset", help="Preset name under presets/<name>. Defaults to config prepare.default_preset.")
+    new_post.add_argument("--source", action="append", default=[])
+    new_post.add_argument("--preset")
 
     new_preset = subparsers.add_parser("new-preset")
     new_preset.add_argument("--name", required=True)
@@ -52,328 +35,159 @@ def parse_args() -> argparse.Namespace:
     prepare_inputs = subparsers.add_parser("prepare-inputs")
     prepare_inputs.add_argument("--slug", required=True)
 
-    generate_outline = subparsers.add_parser("generate-outline")
-    generate_outline.add_argument("--slug", required=True)
-
-    generate_draft = subparsers.add_parser("generate-draft")
-    generate_draft.add_argument("--slug", required=True)
-
     decide_discovery = subparsers.add_parser("decide-discovery")
     decide_discovery.add_argument("--slug", required=True)
     decide_discovery.add_argument("--decision", required=True, choices=("yes", "no"))
 
-    approve = subparsers.add_parser("approve-strategy")
-    approve.add_argument("--slug", required=True)
+    generate_strategy = subparsers.add_parser("generate-strategy")
+    generate_strategy.add_argument("--slug", required=True)
+
+    generate_outline = subparsers.add_parser("generate-outline")
+    generate_outline.add_argument("--slug", required=True)
 
     approve_outline = subparsers.add_parser("approve-outline")
     approve_outline.add_argument("--slug", required=True)
 
-    prepare_visuals = subparsers.add_parser("prepare-visuals")
-    prepare_visuals.add_argument("--slug", required=True)
-
-    embed = subparsers.add_parser("embed-visuals")
-    embed.add_argument("--slug", required=True)
-    embed.add_argument("--visual-id", action="append", default=[])
-
-    verify_visuals = subparsers.add_parser("verify-visuals")
-    verify_visuals.add_argument("--slug", required=True)
-    verify_visuals.add_argument("--visual-id", action="append", default=[])
-    verify_visuals.add_argument("--attempt", default="001")
-
-    export_cmd = subparsers.add_parser("export")
-    export_cmd.add_argument("--slug", required=True)
-    export_cmd.add_argument("--format", required=True, choices=SUPPORTED_FORMATS)
-
-    stage = subparsers.add_parser("stage-attempt")
-    stage.add_argument("--slug", required=True)
-    stage.add_argument("--run-id")
-    stage.add_argument("--new-run", action="store_true")
-
-    check = subparsers.add_parser("check")
-    check.add_argument("--slug", required=True)
-    check.add_argument("--draft")
-    check.add_argument("--output")
+    generate_draft = subparsers.add_parser("generate-draft")
+    generate_draft.add_argument("--slug", required=True)
 
     verify = subparsers.add_parser("verify")
     verify.add_argument("--slug", required=True)
-    verify.add_argument("--run-id", required=True)
-    verify.add_argument("--attempt", required=True)
 
-    evaluate = subparsers.add_parser("evaluate")
-    evaluate.add_argument("--slug", required=True)
-    evaluate.add_argument("--run-id", required=True)
-    evaluate.add_argument("--attempt", required=True)
+    export_cmd = subparsers.add_parser("export")
+    export_cmd.add_argument("--slug", required=True)
+    export_cmd.add_argument("--format", default="html", choices=SUPPORTED_FORMATS)
 
     return parser.parse_args()
 
 
-def print_generated(payload: dict[str, str]) -> None:
+def print_kv(payload: dict[str, str]) -> None:
     for key, value in payload.items():
         print(f"{key}\t{value}")
 
 
-def command_new_post(args: argparse.Namespace) -> int:
+def cmd_new_post(args: argparse.Namespace) -> int:
     repo_root()
     try:
-        generated = run_new_post(
-            slug=args.slug,
-            title=args.title,
-            topic=args.topic,
-            source_paths=[Path(value) for value in args.source],
-            preset_name=args.preset,
+        print_kv(
+            run_new_post(
+                slug=args.slug,
+                title=args.title,
+                topic=args.topic,
+                source_paths=[Path(value) for value in args.source],
+                preset_name=args.preset,
+            )
         )
-        print_generated(generated)
-        return 0
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
-def command_new_preset(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        preset_root = scaffold_preset(args.name)
-        print(f"preset\t{preset_root}")
-        return 0
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
-def command_prepare_inputs(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        generated = prepare_post_inputs(args.slug, require_sources=True)
-        print_generated(generated)
-        return 0
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
-def command_generate_outline(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        generated = run_generate_outline(args.slug)
-        print_generated(generated)
-        return 0
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
-def command_generate_draft(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        generated = run_generate_draft(args.slug)
-        print_generated(generated)
-        return 0
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
-def command_decide_discovery(args: argparse.Namespace) -> int:
-    paths = post_paths(args.slug)
-    if not paths.strategy.exists():
-        raise FileNotFoundError(f"Strategy does not exist: {paths.strategy}")
-    strategy_text = read_text(paths.strategy)
-    frontmatter, body = extract_frontmatter(strategy_text)
-    frontmatter["discovery_decision"] = args.decision
-    frontmatter["discovery_decided_at"] = now_iso()
-    write_text(paths.strategy, format_markdown_with_frontmatter(frontmatter, body))
-    print(f"strategy\t{paths.strategy}")
-    print(f"discovery_decision\t{args.decision}")
-    return 0
-
-
-def command_approve_strategy(args: argparse.Namespace) -> int:
-    paths = post_paths(args.slug)
-    if not paths.strategy.exists():
-        raise FileNotFoundError(f"Strategy does not exist: {paths.strategy}")
-    strategy_text = read_text(paths.strategy)
-    issues = strategy_approval_issues(strategy_text)
-    if issues:
-        raise SystemExit("Strategy is incomplete:\n- " + "\n- ".join(issues))
-    frontmatter, body = extract_frontmatter(strategy_text)
-    frontmatter["status"] = "approved"
-    frontmatter["approved_at"] = now_iso()
-    write_text(paths.strategy, format_markdown_with_frontmatter(frontmatter, body))
-    print(f"strategy\t{paths.strategy}")
-    return 0
-
-
-def command_approve_outline(args: argparse.Namespace) -> int:
-    paths = post_paths(args.slug)
-    if not paths.outline.exists():
-        raise FileNotFoundError(f"Outline does not exist: {paths.outline}")
-    outline_text = read_text(paths.outline)
-    issues = outline_approval_issues(outline_text)
-    if issues:
-        raise SystemExit("Outline is incomplete:\n- " + "\n- ".join(issues))
-    frontmatter, body = extract_frontmatter(outline_text)
-    frontmatter["status"] = "approved"
-    frontmatter["approved_at"] = now_iso()
-    write_text(paths.outline, format_markdown_with_frontmatter(frontmatter, body))
-    print(f"outline\t{paths.outline}")
-    return 0
-
-
-def command_prepare_visuals(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        generated = prepare_visual_requests(args.slug)
-        print_generated(generated)
-        return 0
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
-def command_embed_visuals(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        generated = embed_visuals(args.slug, selected_visual_ids=list(args.visual_id))
-        print_generated(generated)
-        return 0
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
-def command_verify_visuals(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        generated = write_visual_verifier_bundle(args.slug, selected_visual_ids=list(args.visual_id), attempt=args.attempt)
-        print_generated(generated)
-        return 0
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
-def command_export(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        generated = export_post(args.slug, args.format)
-        print_generated(generated)
         return 0
     except (ValueError, FileNotFoundError) as exc:
         raise SystemExit(str(exc)) from exc
 
 
-def command_stage_attempt(args: argparse.Namespace) -> int:
+def cmd_new_preset(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        preset_root = scaffold_preset(args.name)
+        print(f"preset\t{preset_root}")
+        return 0
+    except (ValueError, FileNotFoundError) as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def cmd_prepare_inputs(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        print_kv(prepare_post_inputs(args.slug, require_sources=True))
+        return 0
+    except (ValueError, FileNotFoundError) as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def cmd_decide_discovery(args: argparse.Namespace) -> int:
+    repo_root()
     paths = post_paths(args.slug)
-    if not paths.draft.exists():
-        raise FileNotFoundError("Post artifacts are incomplete. Run `autobloggy generate-draft --slug <slug>` first.")
-
-    if args.run_id and args.new_run:
-        raise SystemExit("Choose either `--run-id <run-id>` to continue an existing run or `--new-run` to start a fresh run, not both.")
-
-    existing_run_ids = []
-    if paths.runs.exists():
-        existing_run_ids = sorted(path.name for path in paths.runs.iterdir() if path.is_dir())
-
-    if args.run_id:
-        run_root = paths.runs / args.run_id
-        if not run_root.exists():
-            detail = f" Existing runs: {', '.join(existing_run_ids)}." if existing_run_ids else ""
-            raise SystemExit(f"Run `{args.run_id}` does not exist for post `{args.slug}`.{detail}")
-        ensure_dir(run_root / "attempts")
-        ensure_results_tsv(run_root / "results.tsv")
-        run_id = args.run_id
-    else:
-        if existing_run_ids and not args.new_run:
-            latest_run_id = existing_run_ids[-1]
-            raise SystemExit(
-                "Post already has staged run state. Continue the active run with "
-                f"`autobloggy stage-attempt --slug {args.slug} --run-id {latest_run_id}` "
-                "or pass `--new-run` to intentionally start a fresh run."
-            )
-        run_id, run_root = create_run(paths.root)
-
-    state = load_state(run_root, run_id)
-    attempt_id, attempt_root = create_attempt(run_root, paths.draft, run_id)
-    ensure_dir(run_root)
-    baseline = summarize_attempt(run_id, "baseline", run_root / "attempts" / attempt_id, paths.draft)
-    check_summary = run_checks(paths.draft)
-    task = choose_next_task(check_summary.model_dump(mode="json"), state.accepted_summary or baseline)
-    prompt_path = stage_prompt_pack(attempt_root, args.slug, task)
-    write_json(attempt_root / "next-task.json", task)
-    write_json(attempt_root / "baseline-summary.json", baseline.model_dump(mode="json"))
-    if state.accepted_summary is None:
-        state.accepted_summary = baseline
-        save_state(run_root, state)
-
-    print(f"run_id\t{run_id}")
-    print(f"attempt_id\t{attempt_id}")
-    print(f"prompt_pack\t{prompt_path}")
+    if not paths.meta.exists():
+        raise SystemExit(f"Post meta does not exist: {paths.meta}. Run `autobloggy new-post` first.")
+    meta = patch_meta(args.slug, discovery_decision=args.decision, discovery_decided_at=now_iso())
+    print(f"slug\t{meta.slug}")
+    print(f"discovery_decision\t{meta.discovery_decision}")
     return 0
 
 
-def command_check(args: argparse.Namespace) -> int:
+def cmd_generate_strategy(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        print_kv(run_generate_strategy(args.slug))
+        return 0
+    except (ValueError, FileNotFoundError) as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def cmd_generate_outline(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        print_kv(run_generate_outline(args.slug))
+        return 0
+    except (ValueError, FileNotFoundError) as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def cmd_approve_outline(args: argparse.Namespace) -> int:
+    repo_root()
     paths = post_paths(args.slug)
-    draft_path = Path(args.draft) if args.draft else paths.draft
-    summary = run_checks(draft_path)
-    payload = summary.model_dump(mode="json")
-    if args.output:
-        write_json(Path(args.output), payload)
-        print(args.output)
-    else:
-        print(payload)
+    if not paths.outline.exists():
+        raise SystemExit(f"Outline does not exist: {paths.outline}")
+    issues = outline_approval_issues(paths.outline.read_text(encoding="utf-8"))
+    if issues:
+        raise SystemExit("Outline is incomplete:\n- " + "\n- ".join(issues))
+    meta = patch_meta(args.slug, status="outline_approved", approved_at=now_iso())
+    print(f"slug\t{meta.slug}")
+    print(f"status\t{meta.status}")
+    print(f"outline\t{paths.outline}")
     return 0
 
 
-def command_verify(args: argparse.Namespace) -> int:
-    paths = post_paths(args.slug)
-    attempt_root = paths.runs / args.run_id / "attempts" / args.attempt
-    if not attempt_root.exists():
-        raise FileNotFoundError(f"Attempt does not exist: {attempt_root}")
-    written = write_verifier_bundle(attempt_root, attempt_root / "draft.qmd")
-    print_generated(written)
-    return 0
+def cmd_generate_draft(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        print_kv(run_generate_draft(args.slug))
+        return 0
+    except (ValueError, FileNotFoundError) as exc:
+        raise SystemExit(str(exc)) from exc
 
 
-def command_evaluate(args: argparse.Namespace) -> int:
-    paths = post_paths(args.slug)
-    run_root = paths.runs / args.run_id
-    attempt_root = run_root / "attempts" / args.attempt
-    state = load_state(run_root, args.run_id)
-    summary = summarize_attempt(args.run_id, args.attempt, attempt_root, attempt_root / "draft.qmd")
-    write_json(attempt_root / "check-results.json", run_checks(attempt_root / "draft.qmd").model_dump(mode="json"))
-    write_json(attempt_root / "evaluation-summary.json", summary.model_dump(mode="json"))
-    write_diff(paths.draft, attempt_root / "draft.qmd", attempt_root / "draft.diff")
+def cmd_verify(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        print_kv(run_verify(args.slug))
+        return 0
+    except (ValueError, FileNotFoundError) as exc:
+        raise SystemExit(str(exc)) from exc
 
-    current = state.accepted_summary
-    decision = "keep" if summary and is_strict_improvement(summary, current) else "revert"
-    rationale = "candidate improved acceptance tuple"
-    if decision == "keep":
-        shutil.copy2(attempt_root / "draft.qmd", paths.draft)
-        state.accepted_summary = summary
-        save_state(run_root, state)
-    else:
-        rationale = "candidate did not strictly improve acceptance tuple"
 
-    task_payload = read_json(attempt_root / "next-task.json") if (attempt_root / "next-task.json").exists() else {"task": "unknown"}
-    append_results(run_root / "results.tsv", args.attempt, task_payload["task"], decision, summary, rationale)
-    print(f"decision\t{decision}")
-    print(f"summary\t{attempt_root / 'evaluation-summary.json'}")
-    return 0
+def cmd_export(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        print_kv(export_post(args.slug, args.format))
+        return 0
+    except (ValueError, FileNotFoundError) as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def main() -> int:
     args = parse_args()
-    command_map = {
-        "new-post": command_new_post,
-        "new-preset": command_new_preset,
-        "prepare-inputs": command_prepare_inputs,
-        "generate-outline": command_generate_outline,
-        "generate-draft": command_generate_draft,
-        "decide-discovery": command_decide_discovery,
-        "approve-strategy": command_approve_strategy,
-        "approve-outline": command_approve_outline,
-        "prepare-visuals": command_prepare_visuals,
-        "embed-visuals": command_embed_visuals,
-        "verify-visuals": command_verify_visuals,
-        "export": command_export,
-        "stage-attempt": command_stage_attempt,
-        "check": command_check,
-        "verify": command_verify,
-        "evaluate": command_evaluate,
+    commands = {
+        "new-post": cmd_new_post,
+        "new-preset": cmd_new_preset,
+        "prepare-inputs": cmd_prepare_inputs,
+        "decide-discovery": cmd_decide_discovery,
+        "generate-strategy": cmd_generate_strategy,
+        "generate-outline": cmd_generate_outline,
+        "approve-outline": cmd_approve_outline,
+        "generate-draft": cmd_generate_draft,
+        "verify": cmd_verify,
+        "export": cmd_export,
     }
-    return command_map[args.command](args)
+    return commands[args.command](args)
 
 
 if __name__ == "__main__":
