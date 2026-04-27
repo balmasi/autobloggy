@@ -1,0 +1,99 @@
+patterns:
+  # Regex is only needed here for inflections and optional "deep".
+  delve_into: re:\b(?:delv(?:e|es|ed|ing)|dive|dives|diving|dove)\s+(?:deep\s+)?into\b
+
+  navigate_complexities: re:\bnavigat(?:e|es|ed|ing)\s+(?:the\s+)?(?:complexities|intricacies|nuances|landscape|terrain)\b
+
+  without_further_ado: without further ado
+  when_it_comes_to: when it comes to
+
+  # Catches stock openers about the surrounding age/world/market.
+  fast_paced_world: re:\b(?:in|within)\s+(?:today'?s|an?)\s+(?:fast[- ]paced|rapidly\s+changing|ever[- ]evolving|digital|modern)\s+(?:world|landscape|era)\b
+
+  in_a_world_where: in a world where
+
+  important_to_note: re:\bit(?:'s|\s+is)\s+(?:important|worth|crucial|essential|vital)\s+(?:to\s+note|noting|mentioning|remembering|recognizing)\b
+
+  # Editorial filler that announces a topic as required instead of making a concrete claim.
+  no_discussion_complete: re:\bno\s+(?:discussion|conversation|overview|guide|analysis)(?:\s+of\s+[^.?!]{1,80})?\s+would\s+be\s+complete\s+without\b
+
+  article_setup: re:\b(?:in|throughout)\s+this\s+(?:article|post|guide|piece)\b
+
+  we_will_explore: re:\bwe(?:'ll|\s+will)\s+(?:explore|discuss|cover|look\s+at|walk\s+through|delve\s+into|unpack|dive\s+into|take\s+a\s+look\s+at)\b
+
+  this_piece_will: re:\bthis\s+(?:article|post|guide|piece)\s+will\s+(?:explore|discuss|cover|show|explain|walk\s+through|break\s+down|examine)\b
+
+  conclusion_boilerplate:
+    - in summary
+    - in conclusion
+    - to conclude
+    - overall
+    - ultimately
+    - all in all
+
+  # Vague source attribution. These are fine with a named source nearby; noisy when unsupported.
+  vague_authority: re:\b(?:experts|studies|research|many|some|industry\s+leaders|thought\s+leaders)\s+(?:agree|agrees|say|says|suggest|suggests|show|shows|indicate|indicates|believe|believes|argue|argues|claim|claims)\b
+
+  # Flags empty "from X to Y" comprehensiveness, e.g. "from strategy to execution".
+  # The bounded wildcard keeps the match inside one sentence and avoids eating a whole paragraph.
+  false_range: re:\bfrom\s+[^.?!]{1,80}\s+to\s+[^.?!]{1,80}\b
+
+  # Often tacked onto a factual sentence to manufacture significance without evidence.
+  superficial_analysis: re:\b(?:highlighting|illustrating|underscoring|showcasing|reflecting|demonstrating)\s+(?:the\s+)?(?:importance|need|value|role|potential|impact|power|significance)\s+of\b
+
+  inflated_modifier:
+    - best-in-class
+    - cutting-edge
+    - game-changing
+    - groundbreaking
+    - next-generation
+    - revolutionary
+    - seamless
+    - world-class
+    - breathtaking
+    - transformative
+
+  # Candidate words only. Keep them when they are concrete domain terms.
+  generic_vocabulary:
+    - re:\baccelerat(?:e|es|ed|ing)\b
+    - actionable
+    - re:\bboasts?\b
+    - re:\belevat(?:e|es|ed|ing)\b
+    - re:\bempower(?:s|ed|ing)?\b
+    - re:\benhanc(?:e|es|ed|ing)\b
+    - re:\bfoster(?:s|ed|ing)?\b
+    - re:\bharness(?:es|ed|ing)?\b
+    - innovative
+    - re:\bleverag(?:e|es|ed|ing)\b
+    - re:\boptimi[sz](?:e|es|ed|ing|ation)\b
+    - paradigm
+    - robust
+    - re:\bstreamlin(?:e|es|ed|ing)\b
+    - re:\bsynerg(?:y|ies|istic)\b
+    - re:\btransform(?:s|ed|ing)?\b
+    - re:\bunlock(?:s|ed|ing)?\b
+
+  # Metaphors that often show up as generic grandeur; expected false positives in literal contexts.
+  grand_metaphor_vocabulary:
+    - re:\btapestr(?:y|ies)\b
+    - kaleidoscope
+    - symphony
+    - labyrinth
+    - realm
+    - journey
+    - beacon
+    - testament
+
+  # Over-neat contrast/reframe: "not just X, but also Y".
+  not_just_but: re:\bnot\s+(?:just|only|merely|simply)\b.{0,140}\bbut(?:\s+also)?\b
+
+  ai_response_leak:
+    - re:\bas an (ai|language model)\b
+    - re:\bi\s+can(?:not|'t)\s+(?:browse|access)\b
+    - my training data
+    - knowledge cutoff
+    - re:\bup\s+to\s+my\s+last\s+(?:update|training\s+update)\b
+    - re:\bturn\d+(?:search|news|fetch|view)\d+\b
+
+  # Candidate only. Em dashes are normal punctuation; repeated decorative use is the smell.
+  em_dash: —

@@ -1,0 +1,4 @@
+version: 1
+openai:
+  display_name: "Slop Mop"
+  default_prompt: "Use $slop-mop to prevent, detect, or remove AI-sounding prose."
