@@ -1,0 +1,29 @@
+extends: default
+
+defaults:
+  brand: general
+  writing: general
+  html_template: general
+  audience: ai-founders
+  format: deep-dive
+
+definitions:
+  brand:
+    general: brand_guide.md
+
+  writing:
+    general: writing_guide.md
+
+  html_template:
+    general: template.html
+
+  audience:
+    ai-founders: audience/ai_founders.md
+    growth-stage-cto: audience/growth_stage_cto.md
+    investor: audience/investor.md
+    research-community: audience/research_community.md
+
+  format:
+    deep-dive: formats/deep_dive.md
+    tactical-howto: formats/tactical_howto.md
+    event-recap: formats/event_recap.md

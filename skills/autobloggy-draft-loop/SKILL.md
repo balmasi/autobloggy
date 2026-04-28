@@ -34,7 +34,7 @@ If the iteration cap is hit before marker count reaches zero, stop and report th
 ## Boundaries
 
 - Edit only `posts/<slug>/draft.html` (and only inside `<main>`).
-- Do not edit `strategy.md`, `outline.md`, `meta.yaml`, the preset files, or `program.md`.
+- Do not edit `blog_brief.md`, `meta.yaml`, the preset files, or `program.md`.
 
 ## Do Not
 

@@ -6,34 +6,30 @@ context: fork
 
 # Autobloggy First Draft
 
-Use this skill only when `program.md` reaches the first-draft step and `autobloggy generate-draft --slug <slug>` has produced an HTML scaffold (the preset's `template.html` with an empty `<main data-content></main>`).
+Use this skill only when `program.md` reaches the first-draft step and `autobloggy generate-draft --slug <slug>` has produced an HTML scaffold from the selected `html_template`.
 
 This skill owns the one allowed direct edit of `posts/<slug>/draft.html` before the verify loop begins. The verify loop owns subsequent edits.
 
 ## Inputs to read
 
 1. `program.md`
-2. `prompts/verifier_rubrics.md` — your output will be evaluated against these. Satisfy them in v0.
-3. `skills/slop-mop/SKILL.md` — apply its prevention rules while writing public-facing prose.
-4. `posts/<slug>/strategy.md`
-5. `posts/<slug>/outline.md`
-6. `posts/<slug>/inputs/prepared/input.md` and `posts/<slug>/inputs/prepared/input_manifest.yaml`
-7. `posts/<slug>/inputs/discovery/discovery.md` if it exists
-8. The active preset's `writing_guide.md` and `brand_guide.md` (preset name is in `posts/<slug>/meta.yaml`).
-9. `posts/<slug>/draft.html` — the scaffolded HTML doc with empty `<main>`.
+2. `posts/<slug>/blog_brief.md` — read this first. It is the only pre-draft entry point.
+3. Every file referenced in the brief's Generation Context, including `prompts/quality_criteria.md`.
+4. `skills/slop-mop/SKILL.md` — apply its prevention rules while writing public-facing prose.
+5. `posts/<slug>/draft.html` — the scaffolded HTML doc.
 
 ## What to write
 
 Edit `posts/<slug>/draft.html` in place. **Only edit inside `<main>`** (and `<title>` / `<meta name="description">` in `<head>`). Leave the rest of the document alone.
 
 - Open `<main>` with the `<h1>` already inserted by the scaffold (do not duplicate it).
-- Write a complete first draft grounded in strategy + outline + input bundle. Every `##`-level heading from `outline.md` should appear, in order, as a real reader-facing `<h2>`.
-- Cover every "Must Cover" item from the strategy. Respect every "Must Avoid" rule.
-- Follow the preset writing guide for voice, paragraph length, and prose discipline.
+- Write a complete first draft grounded in the approved blog brief and the prepared sources it references. Every approved outline heading from `blog_brief.md` should appear, in order, as a real reader-facing `<h2>`.
+- Cover every Required Point and respect every Thing To Avoid in `blog_brief.md`.
+- Follow the referenced writing guide for voice, paragraph length, and prose discipline.
 - Use semantic HTML: `<p>`, `<h2>`, `<h3>`, `<ul>`, `<ol>`, `<blockquote>`, `<figure>` + `<figcaption>`, `<pre><code class="language-…">`, `<a href>`.
 - **Author inline visuals as you go.** Where the argument lands harder with a figure, write the visual inline using `<svg>`, `<canvas>` + `<script>`, or `<img>` with a real `alt`. Wrap visuals in `<figure>` with a `<figcaption>` when they make a sourced or factual claim. Use only the brand colour tokens and font stacks defined in the preset's `brand_guide.md` — these are already wired up as CSS variables in `<head>`.
 - Update `<title>` and `<meta name="description">` in `<head>` to match the post.
-- Do not invent facts, claims, or numbers not supported by the strategy, outline, or input bundle.
+- Do not invent facts, claims, or numbers not supported by `blog_brief.md` or the prepared sources it references.
 - Do not insert `<!-- fb[...] -->` markers. Those are inserted by the verifier in the next phase.
 - No em dashes. No assistant, marketing, or AI-slop boilerplate. No placeholder text.
 
@@ -60,7 +56,7 @@ After writing, return control. Do not run `autobloggy verify` or any loop comman
 
 ## Do Not
 
-- Edit `strategy.md`, `outline.md`, `program.md`, `meta.yaml`, the preset files, or anything outside `<main>` of `draft.html` (other than `<title>` / `<meta name="description">`).
+- Edit `blog_brief.md`, `program.md`, `meta.yaml`, the preset files, or anything outside `<main>` of `draft.html` (other than `<title>` / `<meta name="description">`).
 - Insert any `<!-- fb[...] -->` marker. The verifier owns those.
 - Author standalone `visual.html` files. Visuals are inline in `draft.html`.
 - Invent alternate workflow steps outside `program.md`.

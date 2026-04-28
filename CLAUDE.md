@@ -17,13 +17,9 @@ uv sync
 uv run pytest
 uv run pytest -v -k name
 uv run autobloggy --help
-uv run autobloggy new-post --topic "Why AI eval loops fail"
+uv run autobloggy prep --topic "Why AI eval loops fail"
 uv run autobloggy new-preset --name acme
-uv run autobloggy prepare-inputs --slug my-post
-uv run autobloggy generate-strategy --slug my-post
-uv run autobloggy decide-discovery --slug my-post --decision no
-uv run autobloggy generate-outline --slug my-post
-uv run autobloggy approve-outline --slug my-post
+uv run autobloggy approve-brief --slug my-post
 uv run autobloggy generate-draft --slug my-post
 uv run autobloggy verify --slug my-post
 ```
@@ -33,12 +29,13 @@ uv run autobloggy verify --slug my-post
 | Path | Purpose |
 |------|---------|
 | `program.md` | Canonical workflow, gates, and named skill invocations |
-| `posts/<slug>/inputs/user_provided/` | Human-owned brief plus raw source files |
-| `posts/<slug>/inputs/prepared/` | Canonical LLM-facing input bundle and manifest |
-| `posts/<slug>/` | Per-post artifacts (`meta.yaml`, `strategy.md`, `outline.md`, `draft.html`) |
+| `posts/<slug>/blog_brief.md` | Single pre-draft approval artifact and draft-agent entry point |
+| `posts/<slug>/inputs/raw/` | Human-owned original source files |
+| `posts/<slug>/inputs/prepared/` | System-owned normalized sources and manifest |
+| `posts/<slug>/` | Per-post artifacts (`meta.yaml`, `blog_brief.md`, `draft.html`) |
 | `posts/<slug>/.verify/` | Transient per-iteration verify pack and screenshots (gitignored) |
-| `presets/<name>/` | Editorial packs (`strategy_template.md`, `writing_guide.md`, `brand_guide.md`, `template.html`) |
-| `prompts/verifier_rubrics.md` | Single source of truth for what "good" looks like; shipped to writer and verifier |
+| `presets/<name>/` | Editorial packs and `preset.yaml` resource definitions |
+| `prompts/quality_criteria.md` | Reusable editorial and visual quality criteria |
 | `config.yaml` | Repo-level config including `prepare.default_preset` |
 | `skills/` | Source skill definitions |
 
@@ -59,7 +56,7 @@ uv run autobloggy verify --slug my-post
 
 **Restore (fresh clone or after any skill change):**
 ```bash
-npx skills experimental_install -y
+npx skills add ./skills --agent claude-code codex -y
 # or: ./scripts/install.sh  (also runs uv sync + playwright install)
 ```
 
@@ -102,10 +99,10 @@ When evaluating a change, weigh the complexity cost against the improvement magn
 ## Invariants
 
 - `program.md` is authoritative for the workflow.
-- `posts/<slug>/inputs/user_provided/brief.md` is the only conversational brief file.
-- `posts/<slug>/inputs/user_provided/raw/` is the only home for human-dropped source files.
-- `posts/<slug>/inputs/prepared/` is a deterministic output only.
-- `posts/<slug>/meta.yaml` is the only home for pipeline state (status, preset, discovery decision, timestamps).
-- `strategy.md` is the post-specific source of truth once the human signs off.
+- `posts/<slug>/blog_brief.md` is the only pre-draft approval artifact.
+- `posts/<slug>/inputs/raw/` is the only home for human-dropped source files.
+- `posts/<slug>/inputs/prepared/` is system-owned normalized source output only.
+- `posts/<slug>/meta.yaml` is the only home for pipeline state (status, preset, intake depth, selections, discovery policy, timestamps).
+- `blog_brief.md` is the post-specific source of truth once the human signs off.
 - Only `posts/<slug>/draft.html` (inside `<main>`) is editable during the verify loop and final unslop pass.
 - Verifier feedback flows through `<!-- fb[rule_id]: rationale -->` HTML comments inside `<main>`. Empty-check is `grep -c '<!-- fb\[' draft.html` returning `0`.

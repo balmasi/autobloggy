@@ -1,46 +1,56 @@
 ---
 name: autobloggy-new-post
-description: Kick off a new Autobloggy post from a plain-language brief and the post input folder, then help the user review the generated strategy.
+description: Run Autobloggy prep for a new post, then help the user review and complete blog_brief.md.
 ---
 
 # Autobloggy New Post
 
-Use this skill only when `program.md` says to start a new post.
+Use this skill only when `program.md` says to prepare post artifacts for a new post.
 
-This skill owns kickoff and strategy review only. It does not own discovery, outline generation, draft generation, or the attempt loop.
+This skill owns intake and `blog_brief.md` review only. It does not own draft generation, verification, or final unslop.
 
-Read `references/kickoff-reference.md` before you interview the user or approve a strategy.
+Read `references/kickoff-reference.md` before you interview the user or approve a brief.
+
+## Data
+**Available Presets**:
+
+!`find presets -maxdepth 1 -mindepth 1 -type d -exec basename {} \;`
+
+**Available depths (from config.yaml)**:
+
+- !`sed -n '/^intake:/,/^[a-zA-Z]/p' config.yaml | sed -n '/  depths:/,/^[ ]\{2\}[a-zA-Z]/p' | grep -E '^[ ]{4}[a-zA-Z0-9_-]+:' | sed 's/^[ ]*//;s/:.*//' | sed 's/^/- /'`
+
 
 ## Kickoff Rules
 
 1. Read `program.md`.
-2. Do not lead with slug, preset, or file-path jargon.
-3. Start with plain-language intake. If structured question tools are available, use them for:
-   - start mode: topic, files, or both
-   - preset choice: use the default preset or create a new preset
-4. Ask briefly whether to use the default preset or create a new preset. Explain that the default preset is the repo's generic editorial pack.
-5. Collect one short freeform brief covering:
-   - the post topic
-   - the likely audience
-   - must-cover points
-   - must-avoid framing or tone
-6. If the user already has source files, use `posts/<slug>/inputs/user_provided/raw/` as the default home for them.
-7. Conversational kickoff briefs belong only in `posts/<slug>/inputs/user_provided/brief.md`.
-8. If the user passes file paths directly, let `autobloggy new-post` copy them into `inputs/user_provided/raw/`.
-9. Never write generated files under `inputs/user_provided/`. The canonical bundle belongs under `inputs/prepared/`.
-10. Never infer the intended source from active files, open tabs, tests, or example posts.
+2. Do not lead with slug, preset, intake depth, or file-path jargon.
+3. Start with plain-language intake. If structured question tools are available, use them for start mode: topic, files, or both.
+4. Ask briefly whether to use the default preset/intake depth only if the user has not already implied enough context. The fast path is `autobloggy prep --topic "..."`.
+5. Collect one short freeform direction covering the topic, likely reader, must-cover points, and must-avoid framing.
+6. If the user already has source files, use `posts/<slug>/inputs/raw/` as the default home for originals.
+7. If the user passes file paths directly, let `autobloggy prep --source` copy them into `inputs/raw/`.
+8. Never write generated files under `inputs/raw/`. Normalized or summarized material belongs under `inputs/prepared/`.
+9. Never infer the intended source from active files, open tabs, tests, or example posts.
 
 ## Execution
 
-11. Run `autobloggy new-post`. This scaffolds the input layout and writes `posts/<slug>/meta.yaml`.
-12. If the repo now has raw files or a substantive brief but no prepared input bundle, run `autobloggy prepare-inputs --slug <slug>`.
-13. Run `autobloggy generate-strategy --slug <slug>` to produce the templated `strategy.md` from the active preset.
-14. Read the generated `strategy.md` plus the active preset files.
-15. Ask only the follow-up strategy questions needed to resolve the required fields from `references/kickoff-reference.md`.
-16. Help edit `strategy.md` until the required sections are concrete and every unresolved marker is cleared. There is no `approve-strategy` CLI gate — human review is the gate. Move on to discovery / outline once the user is satisfied.
+1. Run `autobloggy prep` with the topic, sources, preset, intake depth, and `--select key=value` choices that were explicitly provided or safely defaulted.
+2. Read `posts/<slug>/meta.yaml`. Check `discovery.policy`:
+   - `required` — run the `autobloggy-discovery` skill before filling the brief.
+   - `ask` — ask the user whether to run discovery. If yes, run `autobloggy-discovery`. If no, skip and continue.
+   - `never` — skip discovery.
+3. Read `posts/<slug>/blog_brief.md`.
+4. Fill every `[ASK_USER]` marker using the user's answers.
+5. Fill every `[AUTO_FILL]` marker from the topic, prepared source manifest, selected preset resources, and any discovery source referenced by the manifest.
+6. Keep `blog_brief.md` human-reviewable. Do not paste every prepared source into it.
+7. Make the Generation Context complete. The draft agent must be able to start from `blog_brief.md`, follow its file references, and draft without hidden repo knowledge.
+8. Ask only the follow-up questions needed to make the brief draftable.
+9. Stop before approval unless the user explicitly approves the completed brief. Approval is done with `autobloggy approve-brief --slug <slug>`.
 
 ## Do Not
 
-- Decide the preset silently when the user has not yet confirmed default vs new preset.
-- Treat this skill as the owner of outline generation, discovery, or the attempt loop.
+- Generate `strategy.md` or `outline.md`.
+- Run deprecated strategy, discovery-decision, outline, or outline-approval commands.
+- Treat this skill as the owner of draft generation, verification, or the attempt loop.
 - Edit files under `.agents/skills/` or `.claude/skills/`.

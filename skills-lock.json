@@ -4,27 +4,32 @@
     "autobloggy-discovery": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "03e983cf52d95416d9e9e7d926b7173e6113a50614d05ac1984dcc0f53b4543c"
+      "computedHash": "7ee41891ae5b2e457aa1ec4416da9039b116cc77a645a680afe915a3b8b93831"
     },
     "autobloggy-draft-loop": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "94e6f7669bde47e9f0b4192583a78c393f11f666e5bbd9583072a5632d1b4078"
+      "computedHash": "3d3a9809aadcc554083a6bebe6cce4567288f6be1bf9be55e8775338cd739d06"
     },
     "autobloggy-first-draft": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "e13bd11d2043df7b936984cb4490571edb8ee81b06e93bd963522cff194b11a3"
+      "computedHash": "6b38c23e462a8a169c8f029774135f6d5f0ae8007d908aedd93eb15d1e3ad7d9"
     },
     "autobloggy-new-post": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "ac5577c2cfcdef2153aea84e1111498dabfd17c6ecd678b450ed32f6fae9d549"
+      "computedHash": "e920779c3afc1445886b92e7b4601b6ef5820e1f8d4fa470a4549850ac3f33fc"
     },
     "autobloggy-transcribe": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
       "computedHash": "e9658168c4c2d3baafd4d0e10caca499f086845678844f54637747b685c6a41e"
+    },
+    "autobloggy-verifier": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "19283b9214f54db8a5e082c37f824d94c3ba2cfa2adb2962f4de99b8a0ef7d89"
     },
     "ffmpeg-analyse-video": {
       "source": "fabriqaai/ffmpeg-analyse-video-skill",
@@ -39,7 +44,7 @@
     "slop-mop": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "3a8d2b9d49ae50530102bc3ddafe0f01037a9ec8b196aa39ea5e706504503eb5"
+      "computedHash": "5a775041720a612a32c7c01c3a130ef4a9d5bcc62dd6c112118e7cf1aed3b2bd"
     }
   }
 }

@@ -1,60 +1,81 @@
-from __future__ import annotations
-
 from pathlib import Path
 
 from pydantic import BaseModel, Field
 
 
-class PresetPaths(BaseModel):
+class PresetManifest(BaseModel):
+    extends: str | None = None
+    defaults: dict[str, str] = Field(default_factory=dict)
+    definitions: dict[str, dict[str, str]] = Field(default_factory=dict)
+
+
+class ResolvedPresetResource(BaseModel):
+    dimension: str
+    key: str
+    path: Path
+
+
+class ResolvedPreset(BaseModel):
     name: str
     root: Path
-    strategy_template: Path
-    writing_guide: Path
-    brand_guide: Path
-    template_html: Path
+    selections: dict[str, str] = Field(default_factory=dict)
+    resources: dict[str, ResolvedPresetResource] = Field(default_factory=dict)
 
 
-class InputTextSource(BaseModel):
-    path: str
+class BriefSectionDef(BaseModel):
+    label: str
+    prompt: str
+    preamble: str | None = None
+
+
+class IntakeDepthConfig(BaseModel):
+    ask: list[str] = Field(default_factory=list)
+    omit: list[str] = Field(default_factory=list)
+    discovery: str = "auto"
+    require_selections: list[str] = Field(default_factory=list)
+
+
+class SourceManifestEntry(BaseModel):
+    id: str
     kind: str
-    title: str = ""
-    headings: list[str] = Field(default_factory=list)
+    description: str
+    normalized: str
+    origins: list[str] = Field(default_factory=list)
 
 
-class InputManifest(BaseModel):
-    generated_at: str
-    brief: str | None = None
-    raw_text_sources: list[InputTextSource] = Field(default_factory=list)
-    canonical_input: str = ""
+class SourceManifest(BaseModel):
+    sources: list[SourceManifestEntry] = Field(default_factory=list)
+
+
+class DiscoveryMeta(BaseModel):
+    policy: str = "auto"
+    ran: bool = False
 
 
 class PostMeta(BaseModel):
     slug: str
     preset: str
-    status: str = "drafting"
+    intake_depth: str | None = None
+    status: str = "briefing"
     created_at: str
-    approved_at: str | None = None
-    discovery_decision: str | None = None
-    discovery_decided_at: str | None = None
+    brief_approved_at: str | None = None
+    selections: dict[str, str] = Field(default_factory=dict)
+    discovery: DiscoveryMeta = Field(default_factory=DiscoveryMeta)
 
 
 class PostPaths(BaseModel):
     slug: str
     root: Path
     meta: Path
+    blog_brief: Path
     inputs_root: Path
-    user_provided_root: Path
-    user_readme: Path
-    user_brief: Path
-    user_raw_root: Path
-    extracted_root: Path
+    inputs_raw_root: Path
     prepared_root: Path
-    prepared_input: Path
-    input_manifest: Path
-    discovery_root: Path
-    discovery_summary: Path
-    strategy: Path
-    outline: Path
+    prepared_manifest: Path
+    prepared_intake_root: Path
+    prepared_intake_source: Path
+    prepared_discovery_root: Path
+    prepared_discovery_source: Path
     draft: Path
     verify_root: Path
     verify_pack: Path

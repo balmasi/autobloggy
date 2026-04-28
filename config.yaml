@@ -1,9 +1,130 @@
+# ─────────────────────────────────────────────────────────────
+# Autobloggy repo-level configuration
+#
+# CLI commands read this file at runtime. Skill and agent
+# instructions point here for machine defaults.
+# ─────────────────────────────────────────────────────────────
+
+# ── Preset resolution ────────────────────────────────────────
 prepare:
   default_preset: default
   presets_dir: presets
 
+
+# ── Brief sections ───────────────────────────────────────────
+#
+# Defines the sections that appear in blog_brief.md and the
+# prompt shown to the human (or agent) when filling each one.
+# Intake depths reference these keys in their `ask` and
+# `omit` lists. Sections appear in the brief in the order
+# defined here.
+#
+# Fields per section:
+#   label    – heading text used in the brief (## Label)
+#   prompt   – question shown when the intake depth asks the human
+#   preamble – optional static text inserted before the marker
+#
+brief_sections:
+  goal:
+    label: Goal
+    prompt: What business or audience goal should this post serve?
+  target_reader:
+    label: Target Reader
+    prompt: Who exactly is this for? Include role, context, and the decision they are facing.
+  core_thesis:
+    label: Core Thesis
+    prompt: What central claim should the post make?
+  angle:
+    label: Angle
+    prompt: What makes this treatment specific, fresh, or useful?
+  scope:
+    label: Scope
+    prompt: What is in bounds, and what is deliberately out of scope?
+  evidence:
+    label: Evidence
+    prompt: Which source points should the draft rely on?
+  full_outline:
+    label: Full Outline
+    prompt: Provide the full approved structure with at least two ### section headings.
+  required_points:
+    label: Required Points
+    prompt: Are there any arguments, examples, terms, or objections that must appear?
+  things_to_avoid:
+    label: Things To Avoid
+    prompt: Are there any claims, phrases, angles, or examples to avoid?
+  quality_bar:
+    label: Quality Bar
+    prompt: What post-specific quality checks matter beyond the standard criteria?
+    preamble: "Use `prompts/quality_criteria.md`.\n\nPost-specific checks:"
+
+
+# ── Intake ───────────────────────────────────────────────────
+#
+# Intake depths control which brief_sections the agent asks
+# the human to fill vs. fills itself from context.
+#
+# Fields per intake depth:
+#   ask                – section keys to present as questions
+#   omit               – section keys to leave out of the brief
+#   discovery          – when to run competitive discovery:
+#                          never    → always skip
+#                          ask      → prompt the human before filling the brief
+#                          required → must run before filling the brief
+#   require_selections – preset dimensions that must be passed
+#                        via --select key=value on the CLI
+#
+# Sections not in ask or omit are filled automatically by the
+# agent using the section prompt as guidance.
+#
+intake:
+  default_depth: fast
+
+  depths:
+    # fast – minimal friction. Agent fills everything from the
+    # topic and source material.
+    fast:
+      ask: []
+      discovery: never
+
+    # guided – human answers the strategic questions; agent
+    # fills structure. Requires explicit audience and format
+    # selections.
+    guided:
+      ask:
+        - goal
+        - target_reader
+        - required_points
+        - things_to_avoid
+      discovery: ask
+      require_selections:
+        - audience
+        - format
+
+    # expert – human drives all substantive decisions; agent
+    # only generates the outline. Discovery is always discussed
+    # before outlining.
+    expert:
+      ask:
+        - goal
+        - target_reader
+        - core_thesis
+        - angle
+        - scope
+        - evidence
+        - required_points
+        - things_to_avoid
+      discovery: ask
+      require_selections:
+        - audience
+        - format
+
+
+# ── Verify ───────────────────────────────────────────────────
 verify:
+  # Playwright captures a full-page screenshot at each width
+  # (px) during `autobloggy verify`. The verifier sub-agent
+  # judges layout integrity and visual composition at all
+  # three widths. Add widths here to test more breakpoints.
   viewport_widths:
-    - 360
-    - 768
-    - 1280
+    - 360   # mobile
+    - 768   # tablet / prose column

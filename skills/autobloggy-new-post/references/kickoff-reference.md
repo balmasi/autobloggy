@@ -1,39 +1,29 @@
 # Kickoff Reference
 
-Use this file to structure the kickoff interview and the final `strategy.md`.
+Use this file to structure the intake interview and the final `blog_brief.md`.
 
-## Preset Choice
+## Default Intake Questions
 
-Always ask briefly:
+Ask only what is needed:
 
-1. Use the default preset, or
-2. Create a new preset first
+1. What should this post help the reader understand or decide?
+2. Who is the primary reader, and what situation are they in?
+3. What source files or examples should shape the post?
+4. What must the post include?
+5. What claims, tones, examples, or framing should it avoid?
+6. Is the default preset/intake depth acceptable, or is there a specific preset, audience, format, or intake depth to select?
 
-The default preset is the repo's general editorial pack. A new preset is appropriate only when the post needs a distinct reusable strategy template, writing guide, or brand guide.
+## Draftable Brief Checklist
 
-## Required Strategy Questions
+Before the user approves `blog_brief.md`, confirm:
 
-Ask until you can answer each item concretely:
-
-1. What is the actual post topic or operator problem?
-2. What belongs in `posts/<slug>/inputs/user_provided/brief.md`, and what raw files already live under `posts/<slug>/inputs/user_provided/raw/`, if any?
-3. Who is the primary reader, and what job are they trying to do?
-4. What should the reader understand, decide, or do differently after reading?
-5. What voice should the post use? What should it avoid sounding like?
-6. What are the non-negotiable points, examples, or edge cases the post must cover?
-7. What should the post avoid in tone, framing, or argument?
-
-## Required Strategy Sections
-
-Every `strategy.md` must include these sections before approval:
-
-- `Preset Context`
-- `Core Question`
-- `Audience`
-- `Reader Outcome`
-- `Target Voice`
-- `Style Guardrails`
-- `Must Cover`
-- `Must Avoid`
-- `Open Questions Before Approval`
-- `Approval Checklist`
+- No `[ASK_USER]` or `[AUTO_FILL]` markers remain.
+- `## Generation Context` references brand, writing, format, audience, HTML template, quality criteria, and prepared source manifest files.
+- `## Goal` states what the post should accomplish.
+- `## Target Reader` is specific enough to guide examples and framing.
+- `## Core Thesis` contains one central claim.
+- `## Angle` explains why this post is not generic.
+- `## Scope` says what is in and out.
+- `## Evidence` points to concrete source material.
+- `## Full Outline` has publishable `###` section headings.
+- `## Required Points` and `## Things To Avoid` are explicit.

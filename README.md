@@ -1,8 +1,8 @@
 # Autobloggy
 
-Autobloggy is a writing harness for turning a post brief and source material into a strategy, reviewed outline, and a publishable HTML draft refined through a two-pass verify/fix loop.
+A writing harness that turns a topic and source material into an approved `blog_brief.md`, then a publishable HTML draft refined through a verify/fix loop.
 
-`program.md` is the authoritative workflow document. Read it first.
+The agent drives the workflow. You answer a few questions, review the brief, and approve.
 
 ## Install
 
@@ -10,65 +10,73 @@ Autobloggy is a writing harness for turning a post brief and source material int
 ./scripts/install.sh
 ```
 
-Runs `uv sync`, installs the Playwright Chromium browser (used by `autobloggy verify` for full-page screenshots), and reinstalls agent skill copies into `.agents/skills/` and `.claude/skills/`.
+Installs Python deps, the Playwright Chromium browser used during verification, and agent skill copies.
 
-If you only want a piece of it:
+## Usage
 
-- `uv sync` — Python deps
-- `uv run playwright install chromium` — verify-loop screenshots
-- `npx skills add ./skills --agent claude-code codex` — agent skill copies
+Ask the agent in plain English:
 
-## Quick Start
+```text
+Let's write a [guide|blog] post about [topic] using the [fast|guided|expert] intake.
+```
 
-1. `./scripts/install.sh`
-2. Start a new post: `uv run autobloggy new-post --topic "Why AI eval loops fail"` (or pass `--source <path>` for files; or pre-place files under `posts/<slug>/inputs/user_provided/raw/` and run `--slug <slug>`)
-3. If raw files change later: `uv run autobloggy prepare-inputs --slug <slug>`
-4. `uv run autobloggy generate-strategy --slug <slug>` then review `posts/<slug>/strategy.md`
-5. `uv run autobloggy decide-discovery --slug <slug> --decision yes|no`
-6. If `yes`, run discovery before generating the outline
-7. `uv run autobloggy generate-outline --slug <slug>` and rewrite the outline with publishable headings
-8. `uv run autobloggy approve-outline --slug <slug>`
-9. `uv run autobloggy generate-draft --slug <slug>` to scaffold `draft.html` from the preset's `template.html`
-10. Use skill `autobloggy-first-draft` to fill `<main>` with prose AND inline visuals
-11. Verify loop:
-    - `uv run autobloggy verify --slug <slug>` (strips old markers, runs programmatic checks, captures screenshots, writes `.verify/verify-pack.md`)
-    - dispatch the `autobloggy-verifier` sub-agent on the pack to insert LLM-judged markers
-    - fix every `<!-- fb[rule_id]: rationale -->` marker — the same fix pass authors / edits inline visuals when `fb[needs_visual]` or visual rule markers are present
-    - re-run until `marker_count == 0`
-12. Use skill `slop-mop` as the final unslop pass.
+To include source material, drop files into a folder and mention them, or pass paths — the agent will copy them into `posts/<slug>/inputs/raw/` and prepare normalized versions alongside.
 
-## Commands
+From there the agent will:
 
-- `new-post`: scaffolds the input layout, writes `meta.yaml` and `brief.md`, copies any `--source` files into `inputs/user_provided/raw/`
-- `new-preset`: scaffolds a new preset from `presets/default/` (includes `template.html`)
-- `prepare-inputs`: builds the canonical bundle at `inputs/prepared/input.md` plus `input_manifest.yaml`
-- `generate-strategy`: applies the active preset's strategy template to the prepared inputs
-- `decide-discovery`: records the operator's explicit `yes` or `no` discovery decision in `meta.yaml`
-- `generate-outline`: writes a stub outline at `outline.md` after the strategy is reviewed and the discovery decision is recorded
-- `approve-outline`: flips `meta.yaml` `status` to `outline_approved` once the outline has publishable headings
-- `generate-draft`: materializes `draft.html` from the active preset's `template.html`
-- `verify`: strips existing `<!-- fb[...] -->` markers from `draft.html`, runs programmatic checks (inserting markers), captures full-page screenshots at 360/768/1280, and writes `.verify/verify-pack.md` for the verifier sub-agent
+1. Run prep and draft `blog_brief.md`
+2. Hand it to you to review (angle, outline, evidence, required points, things to avoid, visual plan)
+3. On your approval, generate the draft scaffold and write the first draft into `posts/<slug>/draft.html`
+4. Run the verify/fix loop until no automated or manually inserted feedback  `<!-- fb[...] -->` markers remain (guided from the `quality_criteria.md` file)
+5. Finish with a `slop-mop` pass to remove generic AI-sounding prose
 
-## Core Concepts
+You add image/chart requests directly to `blog_brief.md` before approving — the first-draft step authors them inline.
 
-- `program.md`: canonical workflow, boundaries, and named skill invocations
-- `posts/<slug>/meta.yaml`: pipeline state (status, preset, discovery decision, timestamps)
-- `posts/<slug>/inputs/user_provided/`: human-owned brief and raw source files
-- `posts/<slug>/inputs/prepared/`: canonical LLM-facing bundle and manifest
-- `posts/<slug>/strategy.md`: post-specific editorial brief
-- `posts/<slug>/outline.md`: section structure for human review
-- `posts/<slug>/draft.html`: the working document; all loop edits happen inside `<main>`
-- `posts/<slug>/.verify/`: transient per-iteration verify pack and screenshots (gitignored)
-- `presets/<name>/`: reusable editorial packs (`strategy_template.md`, `writing_guide.md`, `brand_guide.md`, `template.html`)
-- `prompts/verifier_rubrics.md`: single source of truth for what "good" looks like; shipped to writer and verifier
-- `<!-- fb[rule_id]: rationale -->`: the only feedback channel; verifier inserts, fixer removes
+## Intake Depths
 
-## Repo Layout
+How much the agent asks before drafting:
 
-- `program.md`: workflow law
-- `config.yaml`: machine settings including `prepare.default_preset` and verify viewport widths
-- `presets/`: reusable preset packs
-- `prompts/`: shared prompts including the verifier rubrics
-- `skills/`: source skill definitions; edit these, not generated agent copies
-- `scripts/`: install and ops helpers
-- `posts/<slug>/`: committed per-post state (gitignored by default)
+- **fast** — agent fills the brief from topic and sources. Discovery skipped.
+- **guided** — you answer the strategic questions, agent fills the rest.
+- **expert** — you drive most substantive decisions.
+
+`guided` and `expert` need `--select audience=...` and `--select format=...` (the agent will ask).
+
+## Presets
+
+A preset is a reusable editorial pack — brand voice, writing rules, HTML template, audience, and format options. The default preset supports:
+
+- `audience`: `general`, `practitioner`, `decision-maker`
+- `format`: `blog`, `guide`
+
+Make a new one:
+
+```bash
+uv run autobloggy new-preset --name acme
+```
+
+Defaults (preset, intake depth, brief sections, verify viewport widths) live in `config.yaml`.
+
+## Where Things Live
+
+| Path | Purpose |
+|------|---------|
+| `posts/<slug>/blog_brief.md` | The one pre-draft approval artifact |
+| `posts/<slug>/draft.html` | Working draft; loop edits happen inside `<main>` |
+| `posts/<slug>/inputs/raw/` | Your original source files (only put originals here) |
+| `posts/<slug>/inputs/prepared/` | Normalized LLM-readable copies (system-owned) |
+| `posts/<slug>/meta.yaml` | Pipeline state |
+| `presets/<name>/` | Editorial packs |
+| `program.md` | Authoritative workflow for agents |
+
+## CLI
+
+Mostly run by the agent, but available to you:
+
+- `prep` — scaffold a post, ingest sources, draft `blog_brief.md`
+- `approve-brief` — validate the brief and mark it approved
+- `generate-draft` — materialize `draft.html` from the template
+- `verify` — run programmatic checks and capture screenshots into `.verify/`
+- `new-preset` — copy `presets/default/` to a new preset folder
+
+`uv run autobloggy --help` for flags.

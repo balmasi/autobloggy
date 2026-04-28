@@ -9,5 +9,17 @@
       "mcp__73d71c4b-bba2-477e-87bc-14673d8fa9d4__notion-search",
       "Bash(ffprobe *)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/scripts/relink-local-skills.sh"
+          }
+        ]
+      }
+    ]
   }
 }

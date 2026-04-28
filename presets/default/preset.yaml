@@ -1,0 +1,25 @@
+defaults:
+  brand: general
+  writing: general
+  html_template: general
+  audience: general
+  format: blog
+
+definitions:
+  brand:
+    general: brand_guide.md
+
+  writing:
+    general: writing_guide.md
+
+  html_template:
+    general: template.html
+
+  audience:
+    general: audience/general.md
+    practitioner: audience/practitioner.md
+    decision-maker: audience/decision_maker.md
+
+  format:
+    blog: formats/blog.md
+    guide: formats/guide.md

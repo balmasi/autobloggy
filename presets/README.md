@@ -2,26 +2,40 @@
 
 A preset is a reusable editorial pack under `presets/<name>/`.
 
-Use a preset when you want multiple posts to share the same strategy structure, writing style, or brand rules.
+Use a preset when multiple posts should share brand, writing, format, audience, or HTML template resources.
 
 ## Create A New Preset
 
-1. Copy `presets/default/` to `presets/<your-preset-name>/`.
-2. Edit the three files in the new folder.
-3. Run `autobloggy new-post --preset <your-preset-name> ...` and review the generated `strategy.md`.
+1. Run `autobloggy new-preset --name <your-preset-name>`.
+2. Edit `preset.yaml` and the resource files it references.
+3. Run `autobloggy prep --preset <your-preset-name> --topic "..."`
+4. Review the generated `blog_brief.md`.
 
-## What Each File Does
+## `preset.yaml`
 
-- `strategy_template.md`: shapes the per-post `strategy.md`
-- `writing_guide.md`: defines voice, style, dos, and don'ts
-- `brand_guide.md`: captures brand language, positioning, and terminology rules
+Presets resolve resources generically:
 
-## Example
+```yaml
+defaults:
+  brand: general
+  writing: general
+  html_template: general
+  audience: general
+  format: blog
 
-```text
-presets/
-  my-preset/
-    strategy_template.md
-    writing_guide.md
-    brand_guide.md
+definitions:
+  brand:
+    general: brand_guide.md
+  writing:
+    general: writing_guide.md
+  html_template:
+    general: template.html
+  audience:
+    general: audience/general.md
+    practitioner: audience/practitioner.md
+  format:
+    blog: formats/blog.md
+    guide: formats/guide.md
 ```
+
+Child presets can use `extends: default`, override defaults, and define only the resources that differ. Resource paths resolve relative to the preset where they are declared.

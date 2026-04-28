@@ -1,7 +1,7 @@
 interface:
   display_name: "Autobloggy New Post"
-  short_description: "Kick off a new Autobloggy post and review the strategy"
-  default_prompt: "Use $autobloggy-new-post to kick off a new Autobloggy post from a plain-language brief."
+  short_description: "Run prep and review blog_brief.md"
+  default_prompt: "Use $autobloggy-new-post to run prep and help complete blog_brief.md."
 
 policy:
   allow_implicit_invocation: true

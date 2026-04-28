@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import re
 
 from .programmatic import CHECKS, FB_MARKER_PATTERN
