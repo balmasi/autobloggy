@@ -39,8 +39,9 @@ class SourceManifestEntry(BaseModel):
     id: str
     kind: str
     description: str
-    normalized: str
+    path: str
     origins: list[str] = Field(default_factory=list)
+    normalized: bool = False
 
 
 class SourceManifest(BaseModel):

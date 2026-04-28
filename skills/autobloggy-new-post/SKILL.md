@@ -36,6 +36,7 @@ Read `references/kickoff-reference.md` before you interview the user or approve 
 ## Execution
 
 1. Run `autobloggy prep` with the topic, sources, preset, intake depth, and `--select key=value` choices that were explicitly provided or safely defaulted.
+1a. Read `posts/<slug>/inputs/prepared/manifest.yaml`. For every entry whose `kind` is in `{pdf, docx, pptx, html, png, jpg, jpeg, tiff, bmp, webp}` and whose `normalized` is not `true`, ask the user whether to normalize it (default: yes), and whether to caption images with a local VLM (default: no — only ask when the file likely has meaningful visuals like slides, diagrams, or screenshots). Then run `autobloggy normalize-source --slug <slug> --source-id <id> [--caption]` for each chosen source. The CLI updates `manifest.yaml` and writes a docling-extracted `source.md` plus a sibling `source_images/` folder under `inputs/prepared/<source-id>/`.
 2. Read `posts/<slug>/meta.yaml`. Check `discovery.policy`:
    - `required` — run the `autobloggy-discovery` skill before filling the brief.
    - `ask` — ask the user whether to run discovery. If yes, run `autobloggy-discovery`. If no, skip and continue.
@@ -54,3 +55,4 @@ Read `references/kickoff-reference.md` before you interview the user or approve 
 - Run deprecated strategy, discovery-decision, outline, or outline-approval commands.
 - Treat this skill as the owner of draft generation, verification, or the attempt loop.
 - Edit files under `.agents/skills/` or `.claude/skills/`.
+- Call the `docling-convert` script directly. Use `autobloggy normalize-source` so the manifest stays in sync.

@@ -12,6 +12,7 @@ Ask only what is needed:
 4. What must the post include?
 5. What claims, tones, examples, or framing should it avoid?
 6. Is the default preset/intake depth acceptable, or is there a specific preset, audience, format, or intake depth to select?
+7. If a binary source (PDF, DOCX, PPTX, slide image) was passed, ask whether to normalize it with `autobloggy normalize-source` and whether to caption embedded images with a local VLM. Captioning is off by default; only suggest it when the file has meaningful visuals.
 
 ## Draftable Brief Checklist
 

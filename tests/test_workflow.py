@@ -130,7 +130,7 @@ def test_prep_copies_sources_and_writes_structural_manifest(fresh_repo: Path, tm
     manifest = yaml.safe_load((post_root / "inputs" / "prepared" / "manifest.yaml").read_text(encoding="utf-8"))
     assert manifest["sources"][0]["id"] == "intake"
     assert manifest["sources"][1]["id"] == "source-001"
-    assert manifest["sources"][1]["normalized"] == "inputs/prepared/source-001/source.md"
+    assert manifest["sources"][1]["path"] == "inputs/prepared/source-001/source.md"
     assert manifest["sources"][1]["origins"] == ["inputs/raw/notes.txt"]
 
 

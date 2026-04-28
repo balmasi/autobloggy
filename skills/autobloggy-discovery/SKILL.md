@@ -48,7 +48,8 @@ Before running, you must have:
 - id: discovery
   kind: discovery
   description: Synthesized external discovery for the post.
-  normalized: inputs/prepared/discovery/source.md
+  path: inputs/prepared/discovery/source.md
+  normalized: true
   origins:
     - inputs/prepared/discovery/threads/main.md
 ```

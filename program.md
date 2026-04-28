@@ -16,6 +16,7 @@
 
 - Before the verify loop, the agent may create or refresh post artifacts only through these commands:
   - `autobloggy prep`
+  - `autobloggy normalize-source`
   - `autobloggy approve-brief`
   - `autobloggy generate-draft`
 - Human-owned raw inputs live only under `posts/<slug>/inputs/raw/`.
@@ -31,7 +32,7 @@
 
 1. Prepare post artifacts.
 Owner: Agent with human input.
-Agent action: Use skill `autobloggy-new-post`. Collect a plain-language direction or source material, briefly ask about preset/intake depth only when needed, and run `autobloggy prep`. The CLI creates `blog_brief.md`, `inputs/prepared/manifest.yaml`, and normalized intake source files. Source files belong in `posts/<slug>/inputs/raw/`.
+Agent action: Use skill `autobloggy-new-post`. Collect a plain-language direction or source material, briefly ask about preset/intake depth only when needed, and run `autobloggy prep`. The CLI creates `blog_brief.md`, `inputs/prepared/manifest.yaml`, and normalized intake source files. Source files belong in `posts/<slug>/inputs/raw/`. If the operator passed binary inputs (PDF, DOCX, PPTX, slide images), the agent may also run `autobloggy normalize-source --slug <slug> --source-id <id> [--caption]` to replace each placeholder source with docling-extracted markdown plus an adjacent `source_images/` folder. The CLI keeps `manifest.yaml` in sync.
 
 2. Fill and review the blog brief.
 Owner: Human approves; agent assists.

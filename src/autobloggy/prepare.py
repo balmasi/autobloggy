@@ -1,6 +1,7 @@
 import html
 import re
 import shutil
+import subprocess
 from pathlib import Path
 
 from .artifacts import (
@@ -9,6 +10,7 @@ from .artifacts import (
     post_paths,
     read_meta,
     read_text,
+    read_yaml,
     write_text,
     write_yaml,
 )
@@ -28,6 +30,8 @@ from .utils import ensure_dir, now_iso, repo_root, slugify
 
 
 TEXT_INPUT_SUFFIXES = {".md", ".markdown", ".txt"}
+DOCLING_KINDS = {"pdf", "docx", "pptx", "html", "png", "jpg", "jpeg", "tiff", "bmp", "webp"}
+DOCLING_SCRIPT = Path("skills/docling-convert/scripts/convert.py")
 QUALITY_CRITERIA_PATH = "prompts/quality_criteria.md"
 
 
@@ -128,7 +132,7 @@ def write_prepared_sources(
             id="intake",
             kind="intake",
             description="Operator intake from the kickoff conversation.",
-            normalized=post_relative_path(paths.prepared_intake_source, paths.root),
+            path=post_relative_path(paths.prepared_intake_source, paths.root),
             origins=["conversation"],
         )
     ]
@@ -136,13 +140,13 @@ def write_prepared_sources(
     for index, raw_path in enumerate(copied_sources, start=1):
         source_id = f"source-{index:03d}"
         prepared_source = paths.prepared_root / source_id / "source.md"
-        normalized = render_prepared_source(source_id, raw_path, prepared_source, paths.root)
+        rel_path = render_prepared_source(source_id, raw_path, prepared_source, paths.root)
         entries.append(
             SourceManifestEntry(
                 id=source_id,
                 kind=source_kind(raw_path),
-                description=f"Normalized source placeholder for {raw_path.name}.",
-                normalized=normalized,
+                description=f"Placeholder source for {raw_path.name} (run `autobloggy normalize-source` to extract).",
+                path=rel_path,
                 origins=[post_relative_path(raw_path, paths.root)],
             )
         )
@@ -150,6 +154,70 @@ def write_prepared_sources(
     manifest = SourceManifest(sources=entries)
     write_yaml(paths.prepared_manifest, manifest.model_dump(mode="json"))
     return manifest
+
+
+def run_normalize_source(
+    slug: str,
+    source_id: str,
+    *,
+    caption: bool = False,
+    caption_model: str = "smolvlm",
+) -> dict[str, str]:
+    paths = post_paths(slug)
+    if not paths.prepared_manifest.exists():
+        raise FileNotFoundError(f"Source manifest does not exist: {paths.prepared_manifest}")
+
+    manifest = SourceManifest.model_validate(read_yaml(paths.prepared_manifest))
+    entry = next((e for e in manifest.sources if e.id == source_id), None)
+    if entry is None:
+        known = ", ".join(e.id for e in manifest.sources) or "(none)"
+        raise ValueError(f"Source `{source_id}` not in manifest. Known: {known}")
+
+    if entry.kind not in DOCLING_KINDS:
+        raise ValueError(
+            f"Source `{source_id}` has kind `{entry.kind}`; docling normalization only supports {sorted(DOCLING_KINDS)}."
+        )
+    if len(entry.origins) != 1 or entry.origins[0] == "conversation":
+        raise ValueError(
+            f"Source `{source_id}` does not have a single file origin. "
+            f"Run `docling-convert` manually for multi-origin or directory sources."
+        )
+
+    raw_path = (paths.root / entry.origins[0]).resolve()
+    if not raw_path.is_file():
+        raise FileNotFoundError(f"Raw input not found: {raw_path}")
+
+    out_path = (paths.root / entry.path).resolve()
+    script_path = (repo_root() / DOCLING_SCRIPT).resolve()
+    if not script_path.is_file():
+        raise FileNotFoundError(f"docling-convert script not found: {script_path}")
+
+    cmd = [
+        "uv", "run", "--with", "docling", "python", str(script_path),
+        str(raw_path), "--output", str(out_path),
+    ]
+    if caption:
+        cmd += ["--caption", "--caption-model", caption_model]
+
+    result = subprocess.run(cmd, check=False)
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"docling-convert failed (exit {result.returncode}). "
+            f"Placeholder source.md left in place."
+        )
+
+    entry.description = f"Docling-normalized source from {raw_path.name}."
+    entry.normalized = True
+    write_yaml(paths.prepared_manifest, manifest.model_dump(mode="json"))
+
+    images_dir = out_path.parent / f"{out_path.stem}_images"
+    return {
+        "slug": slug,
+        "source_id": source_id,
+        "path": str(out_path),
+        "images": str(images_dir) if images_dir.exists() else "",
+        "captioned": "true" if caption else "false",
+    }
 
 
 def _marker_for(field: str, ask: set[str], prompt: str) -> str:

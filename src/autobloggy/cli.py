@@ -1,7 +1,14 @@
 import argparse
 from pathlib import Path
 
-from .prepare import run_approve_brief, run_generate_draft, run_prep, run_skip_discovery, scaffold_preset
+from .prepare import (
+    run_approve_brief,
+    run_generate_draft,
+    run_normalize_source,
+    run_prep,
+    run_skip_discovery,
+    scaffold_preset,
+)
 from .utils import repo_root
 from .verify import run_verify
 
@@ -58,6 +65,29 @@ def parse_args() -> argparse.Namespace:
         help="Scaffold a new preset directory under presets/<name>/.",
     )
     new_preset.add_argument("--name", required=True, metavar="NAME", help="Name of the new preset.")
+
+    normalize_source = subparsers.add_parser(
+        "normalize-source",
+        help="Replace a placeholder source with docling-extracted markdown and update the manifest.",
+    )
+    normalize_source.add_argument("--slug", required=True, metavar="SLUG", help="Post slug.")
+    normalize_source.add_argument(
+        "--source-id",
+        required=True,
+        metavar="ID",
+        help="Source id in manifest.yaml (e.g. source-001).",
+    )
+    normalize_source.add_argument(
+        "--caption",
+        action="store_true",
+        help="Run a local VLM over each image and store its description as alt text. Off by default.",
+    )
+    normalize_source.add_argument(
+        "--caption-model",
+        choices=("smolvlm", "granite"),
+        default="smolvlm",
+        help="Local VLM preset for captioning. Default: smolvlm.",
+    )
 
     skip_discovery = subparsers.add_parser(
         "skip-discovery",
@@ -119,6 +149,22 @@ def cmd_new_preset(args: argparse.Namespace) -> int:
         raise SystemExit(str(exc)) from exc
 
 
+def cmd_normalize_source(args: argparse.Namespace) -> int:
+    repo_root()
+    try:
+        print_kv(
+            run_normalize_source(
+                slug=args.slug,
+                source_id=args.source_id,
+                caption=args.caption,
+                caption_model=args.caption_model,
+            )
+        )
+        return 0
+    except (ValueError, FileNotFoundError, RuntimeError) as exc:
+        raise SystemExit(str(exc)) from exc
+
+
 def cmd_skip_discovery(args: argparse.Namespace) -> int:
     repo_root()
     try:
@@ -160,6 +206,7 @@ def main() -> int:
     commands = {
         "prep": cmd_prep,
         "new-preset": cmd_new_preset,
+        "normalize-source": cmd_normalize_source,
         "skip-discovery": cmd_skip_discovery,
         "approve-brief": cmd_approve_brief,
         "generate-draft": cmd_generate_draft,

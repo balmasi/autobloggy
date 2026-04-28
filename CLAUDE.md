@@ -19,6 +19,7 @@ uv run pytest -v -k name
 uv run autobloggy --help
 uv run autobloggy prep --topic "Why AI eval loops fail"
 uv run autobloggy new-preset --name acme
+uv run autobloggy normalize-source --slug my-post --source-id source-001 --caption
 uv run autobloggy approve-brief --slug my-post
 uv run autobloggy generate-draft --slug my-post
 uv run autobloggy verify --slug my-post
