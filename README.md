@@ -1,8 +1,21 @@
 # Autobloggy
 
-A writing harness that turns a topic and source material into an approved `blog_brief.md`, then a publishable HTML draft refined through a verify/fix loop.
+Turn ideas, research, and existing assets into **publishable blogs and guides** without starting from a blank page.
 
-The agent drives the workflow. You answer a few questions, review the brief, and approve.
+Autobloggy is meant to be run inside a coding-agent harness such as **Claude Code** or **Codex**. It gives that agent a controlled editorial workflow for creating new content or repurposing **PDFs**, **slide decks**, **notes**, **interviews**, **audio**, and **video** into finished HTML posts.
+
+![Autobloggy content pipeline](docs/architecture/content-pipeline.svg)
+
+Use it when you need to:
+
+- **Create from scratch** with a clear angle, outline, evidence plan, and visual plan.
+- **Repurpose source material** into readable content without losing the useful substance.
+- **Include visuals**: charts, diagrams, callouts, and inline article graphics.
+- **Add research before drafting** instead of polishing a shallow first pass.
+- **Improve the draft automatically** with a verify/fix loop for gaps, structure, layout, and quality criteria.
+- **Remove AI slop** so the final draft sounds less generic and more publishable.
+
+You provide the direction and source material. The agent drafts the brief, asks for approval, writes the post, adds visuals, checks its own work, and cleans up the prose.
 
 ## Install
 
@@ -11,6 +24,12 @@ The agent drives the workflow. You answer a few questions, review the brief, and
 ```
 
 Installs Python deps, the Playwright Chromium browser used during verification, and agent skill copies.
+
+## Agent Support
+
+Autobloggy works with **Claude Code** and `AGENTS.md` compatible coding-agent harnesses. The largest `AGENTS.md` target is **Codex from OpenAI**, but the same repo instructions are meant for other compatible agents too, including Amp, Jules from Google, Cursor, Factory, RooCode, Aider, Gemini CLI from Google, goose, Kilo Code, opencode, Phoenix, Zed, Semgrep, Warp, GitHub Copilot Coding Agent, VS Code, Ona, Devin from Cognition, Windsurf from Cognition, UiPath Autopilot & Coded Agents, Augment Code, and Junie from JetBrains.
+
+`AGENTS.md` and `CLAUDE.md` are bootstrap indexes. `program.md` is the workflow authority once an agent starts work.
 
 ## Usage
 

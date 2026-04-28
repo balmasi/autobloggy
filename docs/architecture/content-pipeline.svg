@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="300" viewBox="0 0 960 300" role="img" aria-labelledby="title desc">
+  <title id="title">Autobloggy content pipeline</title>
+  <desc id="desc">Source material flows through a coding-agent harness, Autobloggy workflow, draft creation, verify loop, slop removal, and final publishable post.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 8; }
+      .accent { fill: #0f766e; }
+      .muted { fill: #64748b; }
+      .text { fill: #0f172a; font: 600 17px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .small { fill: #334155; font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .label { fill: #ffffff; font: 700 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .arrow { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#64748b" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="960" height="300" rx="12" />
+
+  <rect class="panel" x="30" y="52" width="150" height="170" />
+  <text class="text" x="55" y="88">Source inputs</text>
+  <text class="small" x="55" y="120">Ideas</text>
+  <text class="small" x="55" y="146">PDFs / PPTs</text>
+  <text class="small" x="55" y="172">Audio / video</text>
+  <text class="small" x="55" y="198">Research notes</text>
+
+  <path class="arrow" d="M190 137 H238" />
+
+  <rect class="panel" x="250" y="52" width="160" height="170" />
+  <rect class="accent" x="275" y="75" width="110" height="28" rx="6" />
+  <text class="label" x="293" y="94">Harness</text>
+  <text class="text" x="278" y="130">Claude Code</text>
+  <text class="text" x="295" y="158">or Codex</text>
+  <text class="small" x="276" y="190">reads AGENTS.md</text>
+
+  <path class="arrow" d="M420 137 H468" />
+
+  <rect class="panel" x="480" y="52" width="160" height="170" />
+  <text class="text" x="512" y="88">Autobloggy</text>
+  <text class="small" x="510" y="120">Brief</text>
+  <text class="small" x="510" y="146">Research</text>
+  <text class="small" x="510" y="172">Draft + visuals</text>
+  <text class="small" x="510" y="198">Approval gates</text>
+
+  <path class="arrow" d="M650 137 H698" />
+
+  <rect class="panel" x="710" y="52" width="220" height="170" />
+  <text class="text" x="750" y="88">Publishable post</text>
+  <text class="small" x="742" y="120">HTML article</text>
+  <text class="small" x="742" y="146">Inline visuals</text>
+  <text class="small" x="742" y="172">Verify/fix loop</text>
+  <text class="small" x="742" y="198">AI slop removal</text>
+
+  <path class="arrow" d="M820 232 C820 266 560 266 560 232" />
+  <text class="small muted" x="635" y="282">self-improving checks before final polish</text>
+</svg>
