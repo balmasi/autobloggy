@@ -56,7 +56,7 @@ Agent action: Use skill `autobloggy-draft-loop`. Each cycle: `autobloggy verify 
 
 7. Prepare local transcripts when the source material needs it.
 Owner: Agent.
-Agent action: Use skill `autobloggy-transcribe` only for local transcription input prep. Store original media under `inputs/raw/` and normalized transcript output under `inputs/prepared/`.
+Agent action: Use skill `transcribe` only for local transcription input prep. Store original media under `inputs/raw/` and normalized transcript output under `inputs/prepared/`.
 
 8. Unslop the final draft.
 Owner: Agent.

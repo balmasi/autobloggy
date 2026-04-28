@@ -21,15 +21,15 @@
       "sourceType": "local",
       "computedHash": "e920779c3afc1445886b92e7b4601b6ef5820e1f8d4fa470a4549850ac3f33fc"
     },
-    "autobloggy-transcribe": {
-      "source": "/Users/balmasi/Projects/autobloggy/skills",
-      "sourceType": "local",
-      "computedHash": "e9658168c4c2d3baafd4d0e10caca499f086845678844f54637747b685c6a41e"
-    },
     "autobloggy-verifier": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
       "computedHash": "19283b9214f54db8a5e082c37f824d94c3ba2cfa2adb2962f4de99b8a0ef7d89"
+    },
+    "docling-convert": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "e7508fc4b3cf422b704b5a682eff19f517688dfc08b34776dabf4dd0caed8fae"
     },
     "ffmpeg-analyse-video": {
       "source": "fabriqaai/ffmpeg-analyse-video-skill",
@@ -45,6 +45,11 @@
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
       "computedHash": "5a775041720a612a32c7c01c3a130ef4a9d5bcc62dd6c112118e7cf1aed3b2bd"
+    },
+    "transcribe": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "ca35614b840279339bfd1033238a7f299ef2ea2eed40a7a61fa0c32c67d4303f"
     }
   }
 }

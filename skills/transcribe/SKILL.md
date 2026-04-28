@@ -1,9 +1,9 @@
 ---
-name: autobloggy-transcribe
+name: transcribe
 description: Run local speech transcription from audio or video files with ffmpeg media prep and a local Voxtral model. Use when a user wants a plain text transcript from a recording without sending audio to a cloud API.
 ---
 
-# Autobloggy Transcribe
+# Transcribe
 
 Use this skill for local transcription on Apple Silicon.
 
@@ -28,7 +28,7 @@ Use this default unless the user explicitly asks for another Voxtral variant. `V
 ## Command
 
 ```bash
-uv run --with mlx-voxtral python skills/autobloggy-transcribe/scripts/transcribe_local.py INPUT --output OUTPUT.txt
+uv run --with mlx-voxtral python skills/transcribe/scripts/transcribe_local.py INPUT --output OUTPUT.txt
 ```
 
 ## Useful Flags
@@ -44,7 +44,7 @@ uv run --with mlx-voxtral python skills/autobloggy-transcribe/scripts/transcribe
 ## Test Command
 
 ```bash
-uv run --with mlx-voxtral python skills/autobloggy-transcribe/scripts/transcribe_local.py posts/nps-alternatives/IMG_3399.denoised.mp4 --start 00:00:00 --duration 00:00:20 --language en --output tmp/asr/voxtral-test.txt --audio-output tmp/asr/voxtral-test.wav --verbose
+uv run --with mlx-voxtral python skills/transcribe/scripts/transcribe_local.py posts/nps-alternatives/IMG_3399.denoised.mp4 --start 00:00:00 --duration 00:00:20 --language en --output tmp/asr/voxtral-test.txt --audio-output tmp/asr/voxtral-test.wav --verbose
 ```
 
 That command should leave both a normalized WAV file and a transcript text file under `tmp/asr/`.

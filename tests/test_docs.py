@@ -28,7 +28,7 @@ def test_skill_inventory(repo_root: Path) -> None:
         "autobloggy-verifier",
         "autobloggy-discovery",
         "slop-mop",
-        "autobloggy-transcribe",
+        "transcribe",
     ):
         assert (skills / name / "SKILL.md").exists(), f"missing {name}"
     assert (skills / "slop-mop" / "scripts" / "detect_slop.py").exists()
