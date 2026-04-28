@@ -63,7 +63,7 @@ npx skills add ./skills --agent claude-code codex -y
 
 **Add a local skill** — create `skills/<name>/SKILL.md`, then:
 ```bash
-npx skills add ./skills --skill <name> -y
+npx skills add ./skills --skill <name> --agent claude-code codex -y
 ```
 
 **Add a GitHub skill:**

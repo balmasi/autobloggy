@@ -23,6 +23,6 @@ echo "==> playwright install chromium"
 uv run playwright install chromium
 
 echo "==> install skills into .agents/ and .claude/"
-npx skills add ./skills --agent claude-code codex -y
+npx skills add ./skills --agent claude-code --agent codex -y
 
 echo "Done."
