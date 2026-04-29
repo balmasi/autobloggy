@@ -33,8 +33,8 @@ If the user hasn't specified a tone or reference voice, ask before drafting or r
 ## Detection Workflow
 
 1. Run `scripts/detect_slop.py`. No third-party deps.
-2. Treat findings as candidates. Domain terms and brand language can be legitimate.
-3. Fix direct rule hits first; then rhythm and structure.
+2. Cluster, don't convict. A single tell rarely proves slop. See "Cluster, don't convict" in `writing-guide.md` for the tiered confidence model — Tier-1 hits (process artifacts, AI leakage) act on a single hit; Tier-3 hits (em dashes, triads) act only when several land together.
+3. Fix Tier-1 hits and direct rule clusters first; then rhythm and structure.
 4. Re-run. A clean pass means no scripted findings — still skim manually.
 
 ## Cleanup Workflow

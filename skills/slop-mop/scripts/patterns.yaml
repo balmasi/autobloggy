@@ -31,8 +31,24 @@ patterns:
     - ultimately
     - all in all
 
+  # Smooth-transition closers that signal a generated wrap-up.
+  tidy_transition:
+    - at the end of the day
+    - re:\bmoving\s+forward\b
+    - re:\bas\s+we\s+continue\s+to\b
+    - re:\bthe\s+future\s+of\s+[^.?!]{1,60}\s+(?:will\s+)?(?:depend|lie|hinge)s?\b
+
+  # Noncommittal balance — the "smart but says nothing" voice.
+  hedged_stance:
+    - re:\bthere\s+is\s+no\s+one[- ]size[- ]fits[- ]all\b
+    - re:\bdepends\s+on\s+(?:several|many|a\s+number\s+of|various|multiple)\s+factors\b
+    - re:\bboth\s+(?:approaches|options|sides|methods)\s+have\s+(?:advantages|pros|merits|strengths)\s+and\s+(?:drawbacks|cons|weaknesses|disadvantages)\b
+    - re:\ba\s+balanced\s+approach\s+is\s+(?:essential|key|important|necessary)\b
+
   # Vague source attribution. These are fine with a named source nearby; noisy when unsupported.
-  vague_authority: re:\b(?:experts|studies|research|many|some|industry\s+leaders|thought\s+leaders)\s+(?:agree|agrees|say|says|suggest|suggests|show|shows|indicate|indicates|believe|believes|argue|argues|claim|claims)\b
+  vague_authority: re:\b(?:experts|studies|research|many|some|industry\s+leaders|thought\s+leaders|critics)\s+(?:agree|agrees|say|says|suggest|suggests|show|shows|indicate|indicates|believe|believes|argue|argues|claim|claims|recognize|recognizes)\b
+
+  widely_recognized: re:\bwidely\s+(?:recognized|regarded|believed|considered|acknowledged)\b
 
   # Flags empty "from X to Y" comprehensiveness, e.g. "from strategy to execution".
   # The bounded wildcard keeps the match inside one sentence and avoids eating a whole paragraph.
@@ -40,6 +56,8 @@ patterns:
 
   # Often tacked onto a factual sentence to manufacture significance without evidence.
   superficial_analysis: re:\b(?:highlighting|illustrating|underscoring|showcasing|reflecting|demonstrating)\s+(?:the\s+)?(?:importance|need|value|role|potential|impact|power|significance)\s+of\b
+
+  superficial_reminder: re:\bthis\s+(?:serves\s+as\s+a\s+reminder|illustrates\s+how|demonstrates\s+how|shows\s+how|reflects)\b
 
   inflated_modifier:
     - best-in-class
@@ -73,6 +91,19 @@ patterns:
     - re:\btransform(?:s|ed|ing)?\b
     - re:\bunlock(?:s|ed|ing)?\b
 
+  # Academic-polish words with measurable post-2022 spike per Juzek/Ward and follow-up work.
+  # Single hits are weak; clusters are the signal.
+  academic_polish:
+    - re:\bintricat(?:e|ely|ies)\b
+    - re:\bnuanced\b
+    - re:\bmeticulous(?:ly)?\b
+    - re:\bunderscor(?:e|es|ed|ing)\b
+    - re:\bshowcas(?:e|es|ed|ing)\b
+    - re:\bgarner(?:s|ed|ing)?\b
+    - re:\bsurpass(?:es|ed|ing)?\b
+    - pivotal
+    - advancements
+
   # Metaphors that often show up as generic grandeur; expected false positives in literal contexts.
   grand_metaphor_vocabulary:
     - re:\btapestr(?:y|ies)\b
@@ -84,8 +115,29 @@ patterns:
     - beacon
     - testament
 
-  # Over-neat contrast/reframe: "not just X, but also Y".
+  # Brochure / promotional voice — praise without observation.
+  brochure_voice:
+    - nestled
+    - vibrant
+    - renowned
+    - bustling
+    - re:\bstands\s+as\s+a\s+testament\s+to\b
+    - re:\bplays\s+a\s+(?:crucial|pivotal|key|vital|significant)\s+role\b
+    - re:\brich\s+cultural\s+heritage\b
+    - re:\bdiverse\s+array\b
+    - re:\blasting\s+impact\b
+    - re:\ba\s+significant\s+contribution\b
+
+  # Over-neat contrast/reframe family. Catches "not just/only/merely/simply X, but Y"
+  # and "not X. it's Y." — the highest-density structural slop.
   not_just_but: re:\bnot\s+(?:just|only|merely|simply)\b.{0,140}\bbut(?:\s+also)?\b
+
+  not_for_but_for: re:\bnot\s+for\s+[^.?!]{1,80}\s+but\s+for\b
+
+  # "It's not X. It's Y." period-break version. Allows "isn't" / "it's not".
+  not_x_its_y: re:\b(?:it'?s\s+not|it\s+is\s+not|it\s+isn'?t|this\s+is\s+not|this\s+isn'?t)\s+(?:about\s+)?[^.?!]{1,60}[.!]\s+(?:it'?s|it\s+is|this\s+is)\s+(?:about\s+)?[^.?!]{1,80}
+
+  more_than_just: re:\bmore\s+than\s+just\s+(?:a|an|the)?\s*\b
 
   ai_response_leak:
     - re:\bas an (ai|language model)\b
@@ -93,7 +145,21 @@ patterns:
     - my training data
     - knowledge cutoff
     - re:\bup\s+to\s+my\s+last\s+(?:update|training\s+update)\b
+    - re:\bsure,?\s+i\s+can\s+help\b
+    - re:\bhere\s+is\s+your\s+(?:article|response|answer|essay|draft|post)\b
+    - re:\blet\s+me\s+know\s+if\s+you\s+(?:want|need|would\s+like)\b
+
+  # Process leakage — copy-pasted citation/markup tokens from chat UIs.
+  # Tier-1 confidence: a single hit is enough.
+  process_artifact:
     - re:\bturn\d+(?:search|news|fetch|view)\d+\b
+    - oaicite
+    - oai_citation
+    - contentReference
+    - attached_file
+    - grok_card
+    - utm_source=chatgpt
+    - utm_source=openai
 
   # Candidate only. Em dashes are normal punctuation; repeated decorative use is the smell.
   em_dash: —
