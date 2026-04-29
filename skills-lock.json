@@ -4,7 +4,7 @@
     "autobloggy-discovery": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "7ee41891ae5b2e457aa1ec4416da9039b116cc77a645a680afe915a3b8b93831"
+      "computedHash": "63cd01b1c6e911dec1b755e76c0e8d78d01f98d5272942f89968ec3dadad404a"
     },
     "autobloggy-draft-loop": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
@@ -19,7 +19,7 @@
     "autobloggy-new-post": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "e920779c3afc1445886b92e7b4601b6ef5820e1f8d4fa470a4549850ac3f33fc"
+      "computedHash": "9b5bf341a06394a8e95914d9bc33ffa89130a9d3c3561ec75e3b22d263d9df0f"
     },
     "autobloggy-verifier": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
@@ -29,7 +29,7 @@
     "docling-convert": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "e7508fc4b3cf422b704b5a682eff19f517688dfc08b34776dabf4dd0caed8fae"
+      "computedHash": "f545a4585e60d1cdaee1ca62cc6cf732123cb96cf03ea56b139e347891a85e57"
     },
     "ffmpeg-analyse-video": {
       "source": "fabriqaai/ffmpeg-analyse-video-skill",
@@ -39,17 +39,17 @@
     "grill-me": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "784f0dbb7403b0f00324bce9a112f715342777a0daee7bbb7385f9c6f0a170ea"
+      "computedHash": "e159afaf82ec47aed6c15163b34422cfbf82feef7986b1cfb02359a47968ad64"
     },
     "slop-mop": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "5a775041720a612a32c7c01c3a130ef4a9d5bcc62dd6c112118e7cf1aed3b2bd"
+      "computedHash": "5fc7b69e5cdc07df5627d81973d73408059d0191132974c37348fd02d9af4bf8"
     },
     "transcribe": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
-      "computedHash": "191372683345995a8d4a4cd3864090b310f999c138d9ef21b50fe5667ad30498"
+      "computedHash": "b122a641ae6bc1f1bf17228173301ce71999e960e77bf446cd0318083d43114e"
     }
   }
 }
