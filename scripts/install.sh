@@ -25,4 +25,22 @@ uv run playwright install chromium
 echo "==> install skills into .agents/ and .claude/"
 npx skills add ./skills --agent claude-code --agent codex -y
 
+echo "==> symlink local skills for live edits"
+if [ -d skills ] && [ -d .agents/skills ]; then
+  for src in skills/*/; do
+    name="$(basename "$src")"
+    target=".agents/skills/$name"
+    link_dest="../../skills/$name"
+    if [ -L "$target" ]; then
+      [ "$(readlink "$target")" = "$link_dest" ] && continue
+      rm "$target"
+    elif [ -e "$target" ]; then
+      rm -rf "$target"
+    else
+      continue
+    fi
+    ln -s "$link_dest" "$target"
+  done
+fi
+
 echo "Done."
