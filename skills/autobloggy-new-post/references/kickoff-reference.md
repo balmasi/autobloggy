@@ -13,6 +13,7 @@ Ask only what is needed:
 5. What claims, tones, examples, or framing should it avoid?
 6. Is the default preset/intake depth acceptable, or is there a specific preset, audience, format, or intake depth to select?
 7. If a binary source (PDF, DOCX, PPTX, slide image) was passed, ask whether to normalize it with `autobloggy normalize-source` and whether to caption embedded images with a local VLM. Captioning is off by default; only suggest it when the file has meaningful visuals.
+8. If audio or video source material contains spoken content needed for the post, ask whether to transcribe it locally with skill `transcribe` before filling the brief.
 
 ## Draftable Brief Checklist
 
@@ -20,6 +21,7 @@ Before the user approves `blog_brief.md`, confirm:
 
 - No `[ASK_USER]` or `[AUTO_FILL]` markers remain.
 - `## Generation Context` references brand, writing, format, audience, HTML template, quality criteria, and prepared source manifest files.
+- If discovery policy is `ask`, `## Generation Context` records `Discovery decision` as `declined` when the operator declines discovery, or references the discovery source after discovery runs.
 - `## Goal` states what the post should accomplish.
 - `## Target Reader` is specific enough to guide examples and framing.
 - `## Core Thesis` contains one central claim.

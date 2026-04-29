@@ -14,8 +14,10 @@ def test_program_md_describes_prep_pipeline(repo_root: Path) -> None:
     assert "Use skill `autobloggy-first-draft`" in program
     assert "Use skill `autobloggy-draft-loop`" in program
     assert "`autobloggy verify --slug <slug>`" in program
+    assert "Use `--intake-depth <name>`" in program
+    assert "use skill `transcribe` during this stage" in program
     assert "Use skill `slop-mop` as the final workflow step" in program
-    for removed in ("generate-strategy", "decide-discovery", "generate-outline", "approve-outline"):
+    for removed in ("generate-strategy", "decide-discovery", "generate-outline", "approve-outline", "skip-discovery"):
         assert removed not in program
 
 

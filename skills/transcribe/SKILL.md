@@ -1,50 +1,43 @@
 ---
 name: transcribe
-description: Run local speech transcription from audio or video files with ffmpeg media prep and a local Voxtral model. Use when a user wants a plain text transcript from a recording without sending audio to a cloud API.
+description: Run local speech transcription from audio or video files with ffmpeg media prep and a local Parakeet (default) or Voxtral model. Use when a user wants a plain text transcript from a recording without sending audio to a cloud API.
+compatibility: Requires macOS on Apple Silicon, uv, ffmpeg, and enough disk for model caches.
 ---
 
 # Transcribe
 
-Use this skill for local transcription on Apple Silicon.
+Use this skill to transcribe local audio or video files without sending media to a cloud API.
 
-This workflow always normalizes media with `ffmpeg` first, then runs Voxtral locally with `mlx-voxtral`.
-
-If the task also needs visual video inspection, read `.agents/skills/ffmpeg-analyse-video/SKILL.md`.
+Normalize media with `ffmpeg`, then run the local ASR script. Use Parakeet by default; use Voxtral only when the user asks for a smoother, less verbatim transcript.
 
 ## Default Stack
 
 - Media prep: `ffmpeg` to 16 kHz mono PCM WAV
-- ASR: `Aayush9029/voxtral-mini-3b-8bit`
+- ASR: `mlx-community/parakeet-tdt-0.6b-v3` via `parakeet-mlx`
 - Output: plain text `.txt`
-
-Use this default unless the user explicitly asks for another Voxtral variant. `Voxtral-Small-24B` is not the practical local choice on this Mac; the quantized Voxtral Mini path worked locally.
 
 ## Prerequisites
 
 - `ffmpeg` on `PATH`
 - `uv`
-- Apple Silicon with enough free disk for the first model download
+- Enough free disk for model caches
 
-## Command
+## Commands
 
 ```bash
-uv run --with mlx-voxtral python skills/transcribe/scripts/transcribe_local.py INPUT --output OUTPUT.txt
+uv run --with parakeet-mlx python skills/transcribe/scripts/transcribe_local.py INPUT --output OUTPUT.txt
+uv run --with mlx-voxtral python skills/transcribe/scripts/transcribe_local.py INPUT --engine voxtral --output OUTPUT.txt
 ```
+
+Run long transcriptions in the background.
 
 ## Useful Flags
 
+- `--engine {parakeet,voxtral}` — default `parakeet`
+- `--model REPO` — override the default model for the chosen engine
 - `--start 00:01:30`
 - `--duration 00:00:20`
-- `--language en`
-- `--language auto`
+- `--language en` / `--language auto` (Voxtral only; Parakeet is monolingual EN by default)
 - `--audio-output tmp/clip.wav`
-- `--model Aayush9029/voxtral-mini-3b-8bit`
-- `--dtype float16`
-
-## Test Command
-
-```bash
-uv run --with mlx-voxtral python skills/transcribe/scripts/transcribe_local.py posts/nps-alternatives/IMG_3399.denoised.mp4 --start 00:00:00 --duration 00:00:20 --language en --output tmp/asr/voxtral-test.txt --audio-output tmp/asr/voxtral-test.wav --verbose
-```
-
-That command should leave both a normalized WAV file and a transcript text file under `tmp/asr/`.
+- `--dtype {bfloat16,float16,float32}` — defaults: `bfloat16` for Parakeet, `float16` for Voxtral
+- `--chunk-size N` — seconds per chunk (Parakeet default 120, Voxtral default 30)

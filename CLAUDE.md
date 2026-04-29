@@ -25,6 +25,8 @@ uv run autobloggy generate-draft --slug my-post
 uv run autobloggy verify --slug my-post
 ```
 
+Commitizen-style commits when needed
+
 ## File Layout
 
 | Path | Purpose |

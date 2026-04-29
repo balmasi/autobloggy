@@ -32,7 +32,9 @@
 
 1. Prepare post artifacts.
 Owner: Agent with human input.
-Agent action: Use skill `autobloggy-new-post`. Collect a plain-language direction or source material, briefly ask about preset/intake depth only when needed, and run `autobloggy prep`. The CLI creates `blog_brief.md`, `inputs/prepared/manifest.yaml`, and normalized intake source files. Source files belong in `posts/<slug>/inputs/raw/`. If the operator passed binary inputs (PDF, DOCX, PPTX, slide images), the agent may also run `autobloggy normalize-source --slug <slug> --source-id <id> [--caption]` to replace each placeholder source with docling-extracted markdown plus an adjacent `source_images/` folder. The CLI keeps `manifest.yaml` in sync.
+Agent action: Use skill `autobloggy-new-post`. Collect a plain-language direction or source material, briefly ask about preset/intake depth only when needed, and run `autobloggy prep`. Use `--intake-depth <name>` for fast/guided/expert intake; there is no `--depth` flag. The CLI creates `blog_brief.md`, `inputs/prepared/manifest.yaml`, and normalized intake source files. Source files belong in `posts/<slug>/inputs/raw/`. If the operator passed audio or video that needs a transcript, use skill `transcribe` during this stage: keep the original media under `inputs/raw/`, write the transcript under `inputs/prepared/`, and make sure `blog_brief.md` points to the transcript through Generation Context or the prepared source manifest. If the operator passed binary document or image inputs (PDF, DOCX, PPTX, HTML, slide images, diagrams, screenshots), the agent may also run `autobloggy normalize-source --slug <slug> --source-id <id> [--caption]` to replace each placeholder source with docling-extracted markdown plus an adjacent `source_images/` folder. The CLI keeps `manifest.yaml` in sync.
+
+Discovery note: after `prep`, read `posts/<slug>/meta.yaml`. If `discovery.policy` is `required`, run skill `autobloggy-discovery` before finalizing the brief; `approve-brief` will fail until the discovery source exists. If it is `ask`, ask the operator. When declined, set `Discovery decision` in `blog_brief.md` to `declined`; do not write a placeholder artifact.
 
 2. Fill and review the blog brief.
 Owner: Human approves; agent assists.
@@ -54,10 +56,6 @@ Agent action: Use skill `autobloggy-first-draft`, with `slop-mop` prevention rul
 Owner: Agent within the user-specified iteration cap.
 Agent action: Use skill `autobloggy-draft-loop`. Each cycle: `autobloggy verify --slug <slug>` strips old markers, runs programmatic checks, captures screenshots, and writes `.verify/verify-pack.md`; then dispatch the `autobloggy-verifier` sub-agent to insert LLM-judged markers; then surgically fix every marker. Stop when marker count is zero and a fresh verify run inserts no new markers, or when the iteration cap is hit.
 
-7. Prepare local transcripts when the source material needs it.
-Owner: Agent.
-Agent action: Use skill `transcribe` only for local transcription input prep. Store original media under `inputs/raw/` and normalized transcript output under `inputs/prepared/`.
-
-8. Unslop the final draft.
+7. Unslop the final draft.
 Owner: Agent.
 Agent action: Use skill `slop-mop` as the final workflow step after the verify loop. Run its detector against `posts/<slug>/draft.html`, then edit only `posts/<slug>/draft.html` inside `<main>` plus title/meta description only if needed. Repeat until the detector is clean or the operator asks to stop.

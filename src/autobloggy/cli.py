@@ -6,7 +6,6 @@ from .prepare import (
     run_generate_draft,
     run_normalize_source,
     run_prep,
-    run_skip_discovery,
     scaffold_preset,
 )
 from .utils import repo_root
@@ -89,12 +88,6 @@ def parse_args() -> argparse.Namespace:
         help="Local VLM preset for captioning. Default: smolvlm.",
     )
 
-    skip_discovery = subparsers.add_parser(
-        "skip-discovery",
-        help="Record that discovery was declined for this post, satisfying an ask/required discovery gate.",
-    )
-    skip_discovery.add_argument("--slug", required=True, metavar="SLUG", help="Post slug.")
-
     approve_brief = subparsers.add_parser(
         "approve-brief",
         help="Lock blog_brief.md and advance meta.yaml status to brief_approved.",
@@ -165,15 +158,6 @@ def cmd_normalize_source(args: argparse.Namespace) -> int:
         raise SystemExit(str(exc)) from exc
 
 
-def cmd_skip_discovery(args: argparse.Namespace) -> int:
-    repo_root()
-    try:
-        print_kv(run_skip_discovery(args.slug))
-        return 0
-    except (ValueError, FileNotFoundError) as exc:
-        raise SystemExit(str(exc)) from exc
-
-
 def cmd_approve_brief(args: argparse.Namespace) -> int:
     repo_root()
     try:
@@ -207,7 +191,6 @@ def main() -> int:
         "prep": cmd_prep,
         "new-preset": cmd_new_preset,
         "normalize-source": cmd_normalize_source,
-        "skip-discovery": cmd_skip_discovery,
         "approve-brief": cmd_approve_brief,
         "generate-draft": cmd_generate_draft,
         "verify": cmd_verify,

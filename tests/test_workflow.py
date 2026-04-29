@@ -81,6 +81,13 @@ Post-specific checks:
 """
 
 
+def _completed_brief_with_discovery_decision(title: str, decision: str) -> str:
+    return _completed_brief(title).replace(
+        "- Prepared source manifest: `inputs/prepared/manifest.yaml`",
+        f"- Prepared source manifest: `inputs/prepared/manifest.yaml`\n- Discovery decision: `{decision}`",
+    )
+
+
 def test_full_pipeline_through_draft_scaffold(fresh_repo: Path) -> None:
     repo = fresh_repo
     slug = "example-post"
@@ -188,6 +195,73 @@ def test_guided_intake_depth_requires_explicit_selection(fresh_repo: Path) -> No
     )
     assert blocked.returncode != 0
     assert "requires explicit --select values" in (blocked.stdout + blocked.stderr)
+
+
+def test_optional_discovery_blocks_until_user_decision_is_recorded(fresh_repo: Path) -> None:
+    repo = fresh_repo
+    slug = "optional-discovery"
+    run_cli(
+        repo,
+        "prep",
+        "--slug",
+        slug,
+        "--topic",
+        "NPS is lossy",
+        "--intake-depth",
+        "guided",
+        "--select",
+        "audience=general",
+        "--select",
+        "format=blog",
+    )
+    post_root = repo / "posts" / slug
+    meta = yaml.safe_load((post_root / "meta.yaml").read_text(encoding="utf-8"))
+    assert meta["discovery"]["policy"] == "ask"
+    assert not (post_root / "inputs" / "prepared" / "discovery" / "source.md").exists()
+
+    brief = (post_root / "blog_brief.md").read_text(encoding="utf-8")
+    assert "Discovery decision: `[ASK_USER]" in brief
+
+    (post_root / "blog_brief.md").write_text(_completed_brief("Optional discovery"), encoding="utf-8")
+    blocked = run_cli(repo, "approve-brief", "--slug", slug, check=False)
+    assert blocked.returncode != 0
+    assert "Discovery policy is `ask`" in (blocked.stdout + blocked.stderr)
+    assert "ask the operator whether to run discovery" in (blocked.stdout + blocked.stderr)
+
+    (post_root / "blog_brief.md").write_text(
+        _completed_brief_with_discovery_decision("Optional discovery", "declined"),
+        encoding="utf-8",
+    )
+    run_cli(repo, "approve-brief", "--slug", slug)
+
+
+def test_required_discovery_blocks_brief_approval_until_source_exists(fresh_repo: Path) -> None:
+    repo = fresh_repo
+    config_path = repo / "config.yaml"
+    config = config_path.read_text(encoding="utf-8")
+    config_path.write_text(config.replace("discovery: ask", "discovery: required", 1), encoding="utf-8")
+
+    slug = "required-discovery"
+    run_cli(
+        repo,
+        "prep",
+        "--slug",
+        slug,
+        "--topic",
+        "NPS is lossy",
+        "--intake-depth",
+        "guided",
+        "--select",
+        "audience=general",
+        "--select",
+        "format=blog",
+    )
+    post_root = repo / "posts" / slug
+    (post_root / "blog_brief.md").write_text(_completed_brief("Required discovery"), encoding="utf-8")
+
+    blocked = run_cli(repo, "approve-brief", "--slug", slug, check=False)
+    assert blocked.returncode != 0
+    assert "Discovery policy is `required`" in (blocked.stdout + blocked.stderr)
 
 
 def test_unknown_selection_reports_available_values(fresh_repo: Path) -> None:

@@ -264,11 +264,19 @@ def render_blog_brief_scaffold(
         "",
         f"- Preset: `{preset_name}`",
         f"- Intake depth: `{intake_depth_name}`",
+        f"- Discovery policy: `{intake_depth.discovery}`",
         *_resource_lines(resolved_preset),
         "- Quality criteria: `prompts/quality_criteria.md`",
         "- Prepared source manifest: `inputs/prepared/manifest.yaml`",
-        "",
     ]
+    if intake_depth.discovery == "ask":
+        context.append(
+            "- Discovery decision: `[ASK_USER] Ask the operator whether to run discovery. "
+            "Replace this with run after running discovery or declined if they decline. [/ASK_USER]`"
+        )
+    elif intake_depth.discovery in {"required", "never"}:
+        context.append(f"- Discovery decision: `{intake_depth.discovery}`")
+    context.append("")
 
     body: list[str] = []
     for key, section in brief_sections.items():
@@ -366,6 +374,10 @@ def _context_values(markdown: str) -> dict[str, str]:
     return values
 
 
+def _discovery_decision(markdown: str) -> str:
+    return _context_values(markdown).get("discovery decision", "").strip().casefold()
+
+
 def _resolve_brief_reference(value: str, post_root: Path) -> Path:
     path = Path(value)
     if path.is_absolute():
@@ -399,11 +411,21 @@ def brief_approval_issues(slug: str) -> list[str]:
         return issues
 
     meta = read_meta(slug)
+    discovery_decision = _discovery_decision(text)
 
-    if meta.discovery.policy in ("ask", "required") and not paths.prepared_discovery_source.exists():
+    if meta.discovery.policy == "required" and not paths.prepared_discovery_source.exists():
         issues.append(
-            f"Discovery policy is `{meta.discovery.policy}` — run the `autobloggy-discovery` skill "
-            f"or run `autobloggy skip-discovery --slug {slug}` to record that discovery was declined."
+            "Discovery policy is `required` — run the `autobloggy-discovery` skill before approving the brief."
+        )
+    elif (
+        meta.discovery.policy == "ask"
+        and not paths.prepared_discovery_source.exists()
+        and discovery_decision != "declined"
+    ):
+        issues.append(
+            "Discovery policy is `ask` — ask the operator whether to run discovery. "
+            "If they want it, run the `autobloggy-discovery` skill before approving. "
+            "If they decline, set `Discovery decision` in blog_brief.md to `declined`."
         )
 
     resolved_preset = resolve_preset(meta.preset, meta.selections, paths.root)
@@ -425,14 +447,6 @@ def brief_approval_issues(slug: str) -> list[str]:
             issues.append(f"Generation Context references missing file `{value}`.")
 
     return issues
-
-
-def run_skip_discovery(slug: str) -> dict[str, str]:
-    paths = post_paths(slug)
-    if not paths.meta.exists():
-        raise FileNotFoundError(f"Post does not exist: {slug}")
-    write_text(paths.prepared_discovery_source, "# Discovery Skipped\n\nOperator declined discovery for this post.\n")
-    return {"slug": slug, "discovery": "skipped"}
 
 
 def run_approve_brief(slug: str) -> dict[str, str]:

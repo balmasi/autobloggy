@@ -32,14 +32,16 @@ Read `references/kickoff-reference.md` before you interview the user or approve 
 7. If the user passes file paths directly, let `autobloggy prep --source` copy them into `inputs/raw/`.
 8. Never write generated files under `inputs/raw/`. Normalized or summarized material belongs under `inputs/prepared/`.
 9. Never infer the intended source from active files, open tabs, tests, or example posts.
+10. Use `--intake-depth <name>` for fast/guided/expert intake. Do not use `--depth`; it is not a CLI flag.
 
 ## Execution
 
 1. Run `autobloggy prep` with the topic, sources, preset, intake depth, and `--select key=value` choices that were explicitly provided or safely defaulted.
-1a. Read `posts/<slug>/inputs/prepared/manifest.yaml`. For every entry whose `kind` is in `{pdf, docx, pptx, html, png, jpg, jpeg, tiff, bmp, webp}` and whose `normalized` is not `true`, ask the user whether to normalize it (default: yes), and whether to caption images with a local VLM (default: no — only ask when the file likely has meaningful visuals like slides, diagrams, or screenshots). Then run `autobloggy normalize-source --slug <slug> --source-id <id> [--caption]` for each chosen source. The CLI updates `manifest.yaml` and writes a docling-extracted `source.md` plus a sibling `source_images/` folder under `inputs/prepared/<source-id>/`.
+1a. Read `posts/<slug>/inputs/prepared/manifest.yaml`. For every entry whose `kind` is in `{pdf, docx, pptx, html, png, jpg, jpeg, tiff, bmp, webp}` and whose `normalized` is not `true`, ask the user whether to normalize it (default: yes), and whether to caption images with a local VLM (default: no; only ask when the file likely has meaningful visuals like slides, diagrams, or screenshots). Then run `autobloggy normalize-source --slug <slug> --source-id <id> [--caption]` for each chosen source. The CLI updates `manifest.yaml` and writes a docling-extracted `source.md` plus a sibling `source_images/` folder under `inputs/prepared/<source-id>/`.
+1b. If a source is audio or video and the post needs spoken content, use skill `transcribe` before filling the brief. Keep the original media under `inputs/raw/`, write the transcript under `inputs/prepared/`, and reference the transcript from `blog_brief.md` through Generation Context or the prepared source manifest.
 2. Read `posts/<slug>/meta.yaml`. Check `discovery.policy`:
    - `required` — run the `autobloggy-discovery` skill before filling the brief.
-   - `ask` — ask the user whether to run discovery. If yes, run `autobloggy-discovery`. If no, skip and continue.
+   - `ask` — ask the user whether to run discovery. If yes, run `autobloggy-discovery`. If no, set `Discovery decision` in `blog_brief.md` to `declined` and continue without writing a placeholder artifact.
    - `never` — skip discovery.
 3. Read `posts/<slug>/blog_brief.md`.
 4. Fill every `[ASK_USER]` marker using the user's answers.
