@@ -34,7 +34,7 @@ def test_skill_inventory(repo_root: Path) -> None:
     ):
         assert (skills / name / "SKILL.md").exists(), f"missing {name}"
     assert (skills / "slop-mop" / "scripts" / "detect_slop.py").exists()
-    assert (skills / "slop-mop" / "references" / "prose-patterns.md").exists()
+    assert (skills / "slop-mop" / "references" / "writing-guide.md").exists()
 
 
 def test_presets_have_manifest_and_template_html(repo_root: Path) -> None:
