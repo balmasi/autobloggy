@@ -25,8 +25,6 @@ uv run autobloggy generate-draft --slug my-post
 uv run autobloggy verify --slug my-post
 ```
 
-Commitizen-style commits when needed
-
 ## File Layout
 
 | Path | Purpose |
@@ -55,12 +53,11 @@ Commitizen-style commits when needed
 
 ## Skills
 
-`skills-lock.json` is the source of truth. `.agents/skills/` and `.claude/skills/` are generated outputs — gitignored, never edited directly, and always reproducible from the lockfile.
+`skills-lock.json` is the source of truth. `.agents/skills/` and `.claude/skills/` are generated outputs — gitignored and always reproducible from the lockfile. After install, `.agents/skills/<name>` is symlinked back to `skills/<name>` so edits are live without reinstalling.
 
 **Restore (fresh clone or after any skill change):**
 ```bash
-npx skills add ./skills --agent claude-code codex -y
-# or: ./scripts/install.sh  (also runs uv sync + playwright install)
+./scripts/install.sh  (runs uv sync + playwright install + skill install + symlinks)
 ```
 
 **Add a local skill** — create `skills/<name>/SKILL.md`, then:
@@ -98,6 +95,12 @@ All else being equal, simpler is better. This repo has a clear seam between dete
 - An improvement of ~0 but simpler code? Keep it.
 
 When evaluating a change, weigh the complexity cost against the improvement magnitude. Prefer fewer CLI flags, fewer prompt-pack fields, and fewer skill steps over marginal quality gains.
+
+## Coding Rules
+- no __future__ modules
+- TDD (red/green/refactor) when viable
+- Clean code. SOLID principles, ALWAYS.
+- Commitizen-style commits when needed
 
 ## Invariants
 
