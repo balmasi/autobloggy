@@ -43,7 +43,6 @@ def test_sloppy_markdown(detector) -> None:
             "no_discussion_complete",
             "vague_authority",
             "superficial_analysis",
-            "false_range",
             "conclusion_boilerplate",
             "grand_metaphor_vocabulary",
             "ai_response_leak",

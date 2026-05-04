@@ -50,10 +50,6 @@ patterns:
 
   widely_recognized: re:\bwidely\s+(?:recognized|regarded|believed|considered|acknowledged)\b
 
-  # Flags empty "from X to Y" comprehensiveness, e.g. "from strategy to execution".
-  # The bounded wildcard keeps the match inside one sentence and avoids eating a whole paragraph.
-  false_range: re:\bfrom\s+[^.?!]{1,80}\s+to\s+[^.?!]{1,80}\b
-
   # Often tacked onto a factual sentence to manufacture significance without evidence.
   superficial_analysis: re:\b(?:highlighting|illustrating|underscoring|showcasing|reflecting|demonstrating)\s+(?:the\s+)?(?:importance|need|value|role|potential|impact|power|significance)\s+of\b
 

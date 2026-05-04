@@ -19,6 +19,7 @@ definitions:
 
   audience:
     ai-founders: audience/ai_founders.md
+    ai-builders: audience/ai_builders.md
     growth-stage-cto: audience/growth_stage_cto.md
     investor: audience/investor.md
     research-community: audience/research_community.md
