@@ -1,0 +1,7 @@
+extends: default
+
+# Inherits default's defaults, writing guide, html template, audiences, and
+# formats. Only the brand dimension is overridden with the TL brand guide.
+definitions:
+  brand:
+    general: brand_guide.md

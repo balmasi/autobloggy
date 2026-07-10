@@ -10,6 +10,7 @@ posts/
 memory/
 
 .playwright-cli/
+.playwright-mcp/
 posts/*/.verify/
 
 .claude/settings.local.json
@@ -18,4 +19,5 @@ posts/*/.verify/
 .agents/skills/
 .claude/skills/
 
-.mcp.json
+.mcp.json.DS_Store
+presets/tl/assets/brand-guide-source.jpg
