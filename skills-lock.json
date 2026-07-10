@@ -36,6 +36,11 @@
       "sourceType": "github",
       "computedHash": "333beca6cb64c984990076e05dd9d040cbef262c3f1232ecf17355d06ccf75ef"
     },
+    "georgian-blog-compliance": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "9d758841b7ed9c8ba7a00caef42d2bae09173319c8ad26c73dce29cd6a4ef5d4"
+    },
     "grill-me": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
@@ -45,6 +50,16 @@
       "source": "/Users/balmasi/Projects/autobloggy/skills",
       "sourceType": "local",
       "computedHash": "5fc7b69e5cdc07df5627d81973d73408059d0191132974c37348fd02d9af4bf8"
+    },
+    "substack-compliance": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "6828842dcf19c3e01a6ae12db17a652119d523e3e52431d30713da2d43fe5b82"
+    },
+    "substack-seo-geo": {
+      "source": "/Users/balmasi/Projects/autobloggy/skills",
+      "sourceType": "local",
+      "computedHash": "e0aaa2caae9a1a9b73bbbc775c8ee05de161cca3d3a3777e13f88624b71f507b"
     },
     "transcribe": {
       "source": "/Users/balmasi/Projects/autobloggy/skills",
