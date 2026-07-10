@@ -96,6 +96,12 @@ Keep the file self-contained beyond that allowlist.
 
 Copy the exact text below into the CMS footnote field when applicable.
 
+
+This blog is provided for informational purposes only and should not be relied upon as legal, business, investment, or tax advice. Nothing in this blog constitutes investment advice, nor is it intended for use by any investors or prospective investors in any Georgian funds.This blog may include links to external websites or information obtained from third-party sources. Georgian has not independently verified and makes no representations regarding the accuracy or completeness of such information, whether current or ongoing.If this content includes third-party advertisements, Georgian has not reviewed such materials and does not endorse any advertising content or the companies referenced.
+
+Any investments or portfolio companies mentioned are for illustrative purposes only and may not be representative of all investments made by funds managed by Georgian. Please contact Georgian for more information.
+
+
 - **Portfolio company logos or names appear:**
   > "The information herein contains logos of third-party companies. These logos are the trademarked property of the respective companies and do not suggest or imply any affiliation, endorsement, or sponsorship of Georgian or any fund, vehicle or product."
 
